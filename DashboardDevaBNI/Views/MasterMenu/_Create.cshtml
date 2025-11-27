@@ -1,0 +1,64 @@
+﻿@model DashboardDevaBNI.ViewModels.MasterMenu_ViewModel
+
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><span class="pr-2">Create Management Menu</span></h5>
+            </div>
+            <div class="card-body">
+
+                <form id="FormData">
+                    @Html.AntiForgeryToken()
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Tipe <span class="labelMandatory">*</span></label>
+                            @Html.DropDownListFor(m => m.TipeId, (IEnumerable<SelectListItem>)ViewBag.TipeId, "-Silahkan pilih-", new { @class = "js-example-placeholder-multiple js-states form-control", @style = "width:100%", @required = true  })
+                        </div>
+                        <div class="form-group">
+                            <label>Nama <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Nama, new { @class = "form-control", @value = "", @autocomplete = "off", @required = true })
+                        </div>
+                        <div class="form-group">
+                            <label>Induk Menu </label>
+                            @Html.DropDownListFor(m => m.ParentId, (IEnumerable<SelectListItem>)ViewBag.ParentId, "-Silahkan pilih-", new { @class = "js-example-placeholder-multiple js-states form-control", @style = "width:100%" })
+                        </div>
+                        <div class="form-group">
+                            <label>Url <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Route, new { @class = "form-control", @value = "", @autocomplete = "off", @required = true })
+                        </div>
+                        <div class="form-group">
+                            <label>Role<span class="labelMandatory">*</span></label>
+                            @Html.DropDownListFor(m => m.Role, (IEnumerable<SelectListItem>) ViewBag.RolePegawai, "-Silahkan pilih-", new { @class = "js-example-placeholder-multiple js-states form-control", @name = "Roles[]", @style = "width:100%", @multiple = "multiple", @required = true  })
+                        </div>
+                        <div class="form-group">
+                            <label>Urutan <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.OrderBy, new { @class = "form-control", @value = "", @autocomplete = "off", @required = true })
+                        </div>
+                        <div class="form-group">
+                            <label>Inisial/Icon <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Icon, new { @class = "form-control", @value = "", @autocomplete = "off", @required = true })
+                        </div>
+                        <div class="form-group mb-0">
+                            <label>Status <span class="labelMandatory">*</span></label>
+                            <div class="custom-control custom-radio">
+                                @Html.RadioButtonFor(model => model.IsActive, true, new { @required = true})&nbsp; Aktif &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                @Html.RadioButtonFor(model => model.IsActive, false, new { @required = true})&nbsp; Tidak Aktif &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="col-sm-12 ml-sm-auto">
+                            <button class="btn btn-success" type="button" id="Submit">
+                                Submit
+                            </button>
+                            <button class="btn btn-danger" type="button" id="Back">
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

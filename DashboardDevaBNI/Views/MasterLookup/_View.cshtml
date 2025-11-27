@@ -1,0 +1,51 @@
+﻿@model DashboardDevaBNI.Models.TblMasterLookup
+
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><span class="pr-2">View Master Lookup</span></h5>
+            </div>
+            <div class="card-body">
+
+                <form id="FormData">
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m=>m.Id)
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Nama <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", @value = "", @autocomplete = "off", @disabled = true })
+                        </div>
+                        <div class="form-group">
+                            <label>Value <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Value, new { @class = "form-control", @value = "", @autocomplete = "off", @disabled = true })
+                        </div>
+                        <div class="form-group">
+                            <label>Type <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Type, new { @class = "form-control", @value = "", @autocomplete = "off", @disabled = true })
+                        </div>
+                        <div class="form-group">
+                            <label>Keterangan<span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Description, new { @class = "form-control", @value = "", @autocomplete = "off", @disabled = true })
+                        </div>
+                        <div class="form-group mb-0">
+                            <label>Status <span class="labelMandatory">*</span></label>
+
+                            <div class="custom-control custom-radio">
+                                @Html.RadioButtonFor(model => model.IsActive, true, new { @disabled = true})&nbsp; Aktif &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                @Html.RadioButtonFor(model => model.IsActive, false, new { @disabled = true})&nbsp; Tidak Aktif &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="col-sm-12 ml-sm-auto">
+                            <button class="btn btn-danger" type="button" id="Back">
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

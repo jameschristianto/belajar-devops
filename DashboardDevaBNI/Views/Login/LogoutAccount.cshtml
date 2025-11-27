@@ -1,0 +1,141 @@
+﻿@model DashboardDevaBNI.ViewModels.DetailLoginOTP_ViewModels
+@using DashboardDevaBNI.Component;
+@using Microsoft.AspNetCore.Http;﻿
+
+@{
+	Layout = null;
+	var SubDomain = GetConfig.AppSetting["Subdomain:Domain"];
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Dashboard Deva</title>
+
+	<!-- Google Font: Source Sans Pro -->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/fontawesome-free/css/all.min.css">
+	<!-- icheck bootstrap -->
+	<link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+	<!-- Theme style -->
+	<link rel="stylesheet" href="@SubDomain/lib/adminlte-master/dist/css/adminlte.min.css">
+</head>
+@section Scripts {
+	@Html.Partial("_Script")
+}
+<style>
+
+	.login-page {
+		/*background-image: url('lib\\images\\backgroundloginbok1.png');*/
+		/*background-image: url('lib\\images\\backgroundloginbok2.png');*/
+		/*background-image: url('lib\\images\\backgroundloginbok3.png');*/
+		background-image: url('lib/images/backgroundloginbok4.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: cover;
+	}
+
+	.card {
+		background-color: rgba(240, 240, 240, 0.35);
+		backdrop-filter: blur(1px);
+	}
+
+</style>
+<body class="hold-transition login-page">
+	<div class="login-box">
+		<!-- /.login-logo -->
+		<div class="card card-outline card-primary">
+			<div class="card-header text-center">
+				<a class="h1"><b>Dashboard</b>Deva</a>
+			</div>
+			<div class="card-body">
+				<p class="login-box-msg">Masukan Username dan Password Anda</p>
+				@using (Html.BeginForm("LogoutFromAny", "Login", FormMethod.Post, new { @class = "smart-form", role = "form" }))
+				{
+					@Html.AntiForgeryToken()
+					<div class="input-group mb-3">
+						@Html.TextBox("Username", "", new { @class = "form-control", @placeholder="Enter Username", @value = "", @autocomplete = "off" })
+						<div class="input-group-append">
+							<div class="input-group-text">
+								<span class="fas fa-envelope"></span>
+							</div>
+						</div>
+					</div>
+					<div class="input-group mb-3">
+						@Html.TextBox("Password", "", new { @class = "form-control", @placeholder="Enter Password", @type = "password", @value = "", @autocomplete = "off", @id="pass" })
+						<div class="eye-toggle input-group-append">
+							<div class="input-group-text">
+								<span class="pass-eye fas fa-eye-slash"></span>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-8">
+						</div>
+						<!-- /.col -->
+						<div class="col-12">
+							<button type="submit" class="btn btn-primary btn-block">Logout Account</button>
+						</div>
+						<!-- /.col -->
+					</div>
+					<div class="row mt-3">
+						<div class="col-12">
+							<div class="w3layouts_more-buttn" style="margin: auto">
+								<h3 class="text-center" style="color:red; font-size: 18px">
+									@ViewBag.ErrorMessage
+								</h3>
+							</div>
+						</div>
+					</div>
+				}
+				<!-- /.social-auth-links -->
+			</div>
+			<!-- /.card-body -->
+		</div>
+		<!-- /.card -->
+	</div>
+
+	<!-- Modal OTP -->
+	<div id="myModal" class="modal">
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<p>Modal content goes here.</p>
+		</div>
+	</div>
+
+
+	<!-- /.login-box -->
+	<!-- jQuery -->
+	<script src="@SubDomain/lib/adminlte-master/plugins/jquery/jquery.min.js"></script>
+	<!-- Bootstrap 4 -->
+	<script src="@SubDomain/lib/adminlte-master/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+	<!-- AdminLTE App -->
+	<script src="@SubDomain/lib/adminlte-master/dist/js/adminlte.min.js"></script>
+
+	<script>
+
+		$(document).ready(function () {
+			$(".eye-toggle").on('click', function () {
+				var passwordElement = document.getElementById("pass");
+				if (passwordElement.getAttribute("type") == "password") {
+					passwordElement.setAttribute("type", "text");
+					$(".pass-eye").removeClass("fa-eye-slash");
+					$(".pass-eye").addClass("fa-eye");
+				} else {
+					passwordElement.setAttribute("type", "password");
+					$(".pass-eye").removeClass("fa-eye");
+					$(".pass-eye").addClass("fa-eye-slash");
+				}
+			});
+
+		});
+	</script>
+
+
+</body>
+</html>

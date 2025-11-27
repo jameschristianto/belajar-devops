@@ -1,0 +1,655 @@
+﻿@model DashboardDevaBNI.ViewModels.SliderLogin_ViewModel
+@using DashboardDevaBNI.Component;
+@using Microsoft.AspNetCore.Http;﻿
+
+@{
+	Layout = null;
+	var SubDomain = GetConfig.AppSetting["Subdomain:Domain"];
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Login - DJP Interop</title>
+
+    <!-- Google Font: Source Sans Pro -->
+	<link href="@SubDomain/css/sanspro.css" rel="stylesheet" />
+	<!-- Font Awesome -->
+	<link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/fontawesome-free/css/all.min.css">
+	<!-- icheck bootstrap -->
+	<link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+	<!-- Theme style -->
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/dist/css/adminlte.min.css">
+	<!-- Carousel -->
+    <link href="@SubDomain/lib/OwlCarousel/dist/assets/owl.carousel.min.css" rel="stylesheet" />
+    <link href="@SubDomain/lib/OwlCarousel/dist/assets/owl.theme.default.min.css" rel="stylesheet" />
+	<!-- Ionicon -->
+	<link href="@SubDomain/lib/adminlte-master/plugins/ionicons/css/ionicons.css" rel="stylesheet" />
+	<!-- Toastr -->
+    <link href="@SubDomain/lib/adminlte-master/plugins/toastr/toastr.min.css" rel="stylesheet">
+	<!-- SweetAlert2 -->
+	<link href="@SubDomain/lib/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet" />
+
+</head>
+@section Scripts {
+	@Html.Partial("_Script")
+}
+<style>
+	@@media (min-width: 579px) {
+		.col-l2-cust {
+			flex: unset;
+			width: 35rem;
+		}
+	}
+
+	@@media (min-width: 992px) {
+		.col-l2-cust {
+			flex: unset;
+			width: 60rem;
+		}
+	}
+
+	@@media (min-width: 1100px) {
+		.col-l2-cust {
+			flex: unset;
+			width: 65rem;
+		}
+	}
+
+	@@media (min-width: 1200px) {
+		.col-l2-cust {
+			flex: unset;
+			width: 73rem;
+		}
+	}
+
+	@@media (min-width: 1300px) {
+		.col-l2-cust {
+			flex: unset;
+			width: 80rem;
+		}
+	}
+
+	@@media (min-width: 1400px) {
+		.col-l2-cust {
+			flex: unset;
+			width: 85rem;
+		}
+	}
+
+	@@media (min-width: 1500px) {
+		.col-l2-cust {
+			flex: unset;
+			width: 90rem;
+		}
+	}
+
+	@@media (min-width: 1700px) {
+		.col-l2-cust {
+			flex: unset;
+			width: 110rem;
+		}
+	}
+
+	#ContainerPengumuman {
+		overflow: hidden;
+	}
+
+	#Pengumuman {
+		white-space: nowrap;
+		font-size: 16px;
+		position: relative;
+		display: inline-block;
+		left: 100%; /* Start offscreen to the right */
+	}
+
+    .login-page {
+        /*background-image: url('lib\\images\\backgroundloginbok1.png');*/
+        /*background-image: url('lib\\images\\backgroundloginbok2.png');*/
+        /*background-image: url('lib\\images\\backgroundloginbok3.png');*/
+		background-image: url('lib/images/backgroundLoginBok4.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: cover;
+	}
+
+	.card {
+		background-color: rgba(240, 240, 240, 0.35);
+		backdrop-filter: blur(10px);
+	}
+
+	.owl-dots{
+		display: none
+	}
+
+	.swal2-input-label {
+			text-align: center;
+		}
+	/*.login-box{
+		width: 1500px
+	}*/
+</style>
+<body >
+	<div class="login-page" style="height: fit-content">
+		<div class="login-box col-l2-cust mb-3 mt-3">
+			<!-- /.login-logo -->
+			<div class="card card-outline">
+				<div class="card-body row">
+					<div class="col-sm-12 col-sm-12 col-md-12 col-l-8 col-lg-8">
+						<div class="owl-carousel owl-theme" style="width: inherit">
+							@* <div class="item"><img src="/lib/images/Banner1.svg" /></div>
+							<div class="item"><img src="/lib/images/Banner2.svg" /></div>
+							<div class="item"><img src="/lib/images/Banner3.svg" /></div> *@
+
+							@*@foreach (var item in Model.ListSlider)
+							{
+								<div class="item"><img src="@item.ImagePath.Replace("../","")" /></div>
+							}*@
+						</div>
+
+					</div>
+					<div class="col-sm-12 col-sm-12 col-md-12 col-l-4 col-lg-4">
+						<div class="card-header text-center mb-5">
+							<a href="#" class="h1"><b>Dashboard </b>Deva</a>
+						</div>
+						<h2 class="login-box-msg p-0"><b>Welcome</h2>
+						<h5 class="login-box-msg p-0 mb-3">Sign in to continue</h5>
+
+
+						@using (Html.BeginForm("Login", GetConfig.AppSetting["Subdomain:DomainController"] + "Login", FormMethod.Post, new { @id = "form", @class = "smart-form", role = "form" }))
+						{
+							@Html.AntiForgeryToken()
+							<div class="input-group mb-3">
+								@Html.TextBox("Username", "", new { @class = "form-control", @placeholder="Enter Username", @value = "", @autocomplete = "off" })
+								<div class="input-group-append">
+									<div class="input-group-text">
+										<span class="fas fa-user-alt"></span>
+									</div>
+								</div>
+							</div>
+							<div class="input-group mb-3">
+								@Html.TextBox("Password", "", new { @class = "form-control", @placeholder="Enter Password", @type = "password", @value = "", @autocomplete = "off", @id="pass" })
+								<div class="eye-toggle input-group-append">
+									<div class="input-group-text">
+										<span class="pass-eye fas fa-eye-slash"></span>
+									</div>
+								</div>
+							</div>
+							@Html.TextBox("KodeOtp", "", new { @class = "form-control", @value = "", @autocomplete = "off", @hidden = true })
+							@Html.TextBox("ObjectSend", "", new { @class = "form-control", @value = "", @autocomplete = "off", @hidden = true })
+							@Html.TextBox("TypeSend", "", new { @class = "form-control", @value = "", @autocomplete = "off", @hidden = true })
+							@*@Html.TextBox("TokenCapcha", "", new { @class = "form-control", @value = "", @autocomplete = "off", @hidden = true })
+							<div class="w-100 mb-2">
+								<div class="g-recaptcha m-auto" data-sitekey="6LeHHC0pAAAAAE8XoR5Ukc6vzrkyehEUs4q607Zl" data-callback="onSubmit"></div>
+							</div>*@
+
+							<div class="row">
+								<div class="col-12">
+									<button class="btn btn-info btn-block">Sign In</button>
+								</div>
+								<!-- /.col -->
+								<div class="col-12">
+									<p style="text-align: right;">
+										<a href="/Login/LogoutAccount" class="btn btn-link float-left" style=" color: #4931ff">Logout Account From Another Device</a>
+                                        <a href="/Login/LupaPassword" class="btn btn-link float-right" style=" color: #4931ff">Forget Password</a>
+										<a href="/Login/Tutorial" target="_blank" class="btn btn-link float-right">User manual aplikasi</a>
+										@*<a href="~/downloadFile/AM_Aplikasi_Dashboard_BOK_Kemenkes_(Forgot_Password)_Ver_1.0.docx.pdf" target="_blank" class="btn btn-link float-right">User manual Forget Password</a>*@
+									</p>
+								</div>
+								<!-- /.col -->
+							</div>
+							<div class="row mt-3">
+								<div class="col-12">
+									<div class="w3layouts_more-buttn" style="margin: auto">
+										<h3 class="text-center" style="color:red; font-size: 18px">
+											@ViewBag.ErrorMessage
+										</h3>
+										<h3 class="text-center" style="color:green; font-size: 18px">
+											@ViewBag.SuccessMessage
+										</h3>
+									</div>
+								</div>
+							</div>
+						}
+						<!-- /.social-auth-links -->
+
+					</div>
+				</div>
+				<!-- /.card-body -->
+			</div>
+			<!-- /.card -->
+		</div>
+
+		<!-- Modal OTP -->
+		<div id="myModal" class="modal">
+			<div class="modal-content">
+				<span class="close">&times;</span>
+				<p>Modal content goes here.</p>
+			</div>
+		</div>
+	</div>
+	
+	
+
+	<!-- /.login-box -->
+	<!-- jQuery -->
+	<script src="@SubDomain/lib/adminlte-master/plugins/jquery/jquery.min.js"></script>
+	<!-- Bootstrap 4 -->
+	<script src="@SubDomain/lib/adminlte-master/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+	<!-- Captha -->
+	@*<script src="https://www.google.com/recaptcha/api.js"></script>*@
+	@*<script src="https://www.google.com/recaptcha/api.js" async defer></script>*@
+	@*<script src="https://www.google.com/recaptcha/api.js?render=6LeHHC0pAAAAAE8XoR5Ukc6vzrkyehEUs4q607Zl"></script>*@
+    <!-- Carousel -->
+    <script src="@SubDomain/lib/OwlCarousel/dist/owl.carousel.min.js"></script>
+	<!-- AdminLTE App -->
+	<script src="@SubDomain/lib/adminlte-master/dist/js/adminlte.min.js"></script>
+	<!-- Toastr -->
+	<script src="@SubDomain/lib/adminlte-master/plugins/toastr/toastr.min.js"></script>
+
+    <!-- Sweetalert2 -->
+	<script src="@SubDomain/lib/sweetalert2/dist/sweetalert2.all.min.js"></script>
+
+	@*<script src="js/Login/login.js"></script>*@
+
+	<script>
+		@{
+			var Kode = @ViewBag.Kode == null ? "0" : @ViewBag.Kode;
+			var Validate = @ViewBag.Validate == null ? "0" : @ViewBag.Validate;
+			var ErrorMessage = @ViewBag.ErrorMessage == null ? "0" : @ViewBag.ErrorMessage;
+			var Username = @Model.Username == null ? "0" : @Model.Username;
+			var ShowOTPEmail = @Model.ShowOtpEmail == null ? "0" : @Model.ShowOtpEmail;
+			var ShowOTPWa = @Model.ShowOtpWa == null ? "0" : @Model.ShowOtpWa;
+		}
+
+
+		var countdownInterval;
+		var Kode = @Kode
+		var Validate = @Validate
+		var ErrorMessage = "@ErrorMessage";
+		var Username = "@Username";
+		var ShowOTPEmail = "@ShowOTPEmail";
+		var ShowOTPWa = "@ShowOTPWa";
+		var TypeOtp = 0;
+		var EmailorNumber = "";
+
+		$(document).ready(function () {
+			var textWidth = $("#Pengumuman").width();
+			animateText('ContainerPengumuman', 'Pengumuman', @ViewBag.Speed, textWidth)
+			
+			$('.owl-carousel').owlCarousel({
+				items: 1,
+				loop: true,
+				autoplay: true,
+				autoplayTimeout: 3000,
+				autoplayHoverPause: true,
+				responsiveClass: true,
+				lazyLoad: true,
+				animateOut: 'fadeOut'
+			})
+
+			//grecaptcha.ready(function () {
+			//		grecaptcha.execute('6LeSFy0pAAAAAIE5GWVq1zfwKgCYln2Ao1HpwNBs', { action: 'submit' }).then(function (token) {
+			//		// Add your logic to submit to your backend server here.
+			//		console.log(token)
+			//		document.getElementById("token-value-id").value = token
+			//	});
+			//});
+
+			$(".eye-toggle").on('click', function () {
+				var passwordElement = document.getElementById("pass");
+				if (passwordElement.getAttribute("type") == "password") {
+					passwordElement.setAttribute("type", "text");
+					$(".pass-eye").removeClass("fa-eye-slash");
+					$(".pass-eye").addClass("fa-eye");
+				} else {
+					passwordElement.setAttribute("type", "password");
+					$(".pass-eye").removeClass("fa-eye");
+					$(".pass-eye").addClass("fa-eye-slash");
+				}
+			});
+
+			//document.getElementById('form').addEventListener('submit', function (event) {
+			//	event.preventDefault();
+
+			//	grecaptcha.ready(function () {
+			//		grecaptcha.execute('6LeSFy0pAAAAAIE5GWVq1zfwKgCYln2Ao1HpwNBs', { action: 'submit' }).then(function (token) {
+			//			// Include the token in your form submission
+			//			document.getElementById('form').insertAdjacentHTML('beforeend', '<input type="hidden" name="g-recaptcha-response" value="' + token + '">');
+			//			document.getElementById('form').submit();
+			//		});
+			//	});
+			//});
+
+			if (Kode == "2") {
+				swal({
+					title: "Konfirmasi",
+					text: "Apakah Anda yakin ingin melakukan forget password?",
+					icon: "warning",
+					buttons: true,
+					dangerMode: true,
+				}).then((willforget) => {
+					if (willforget) {
+						window.open("../Login/LupaPassword", "_Blank")
+					}
+				});
+			}
+
+			ValidateOtp(Validate);
+			if (ErrorMessage != '0') {
+				Swal.showValidationMessage(ErrorMessage);
+			}
+		});
+		function animateText(container, text, speed, width) {
+			var containerWidth = $("#" + container).width();
+			var textWidth = width
+
+			// Animate to the left based on container and text width
+			$("#" + text).animate({
+				left: -textWidth
+			}, speed, function () { // Adjust the duration as needed
+				// Animation complete.
+				// Reset position to the right, repeat the animation
+				$("#" + text).css("left", containerWidth);
+				animateText(container, text, speed, width)
+			});
+		}
+		function onSubmit(token) {
+			$("#TokenCapcha").val(token)
+            // The reCAPTCHA token is passed to this function
+            // You can add additional client-side validation here if needed
+			//document.getElementById("form").submit();
+        }
+
+
+		function ValidateOtp(Validate) {
+			if (Validate == "1") {
+				$.ajax({
+					url: '../Login/CheckOTP',
+					type: 'POST',
+					data: { "Username": Username },
+					success: function (d) {
+						var CheckEmail = d.data.checkVerifEmail;
+						var CheckWhatsapp = d.data.checkVerifWhatsapp;
+
+						Swal.fire({
+							title: "Pilih Metode Verifikasi?",
+							text: "Pilih salah satu metode dibawah ini untuk mendapatkan kode OTP.",
+							showConfirmButton: ShowOTPEmail === "1" && CheckEmail === true,
+							showDenyButton: ShowOTPWa === "1" && CheckWhatsapp === true,
+							denyButtonColor: "#25d366",
+							confirmButtonText: '<i class="fa fa-envelope"></i> Email',
+							denyButtonText: '<i class="icon ion-social-whatsapp"></i> Whatsapp',
+						}).then((result) => {
+							if (result.isConfirmed) {
+								TypeOtp = 1
+								$.ajax({
+									url: '../Login/SendEmailOTP',
+									type: 'POST',
+									data: { "Username": Username, "GenerateNewOtp": 1 },
+									success: function (d) {
+										EmailorNumber = d.message;
+										$("#ObjectSend").val(EmailorNumber);
+										$("#TypeSend").val(TypeOtp);
+										if (d.statusCode == "1") {
+											Swal.fire({
+												title: 'Validasi OTP',
+												input: 'text',
+												inputLabel: 'Kode OTP telah dikirim melalui Email ke ' + d.message,
+												inputPlaceholder: 'Masukan OTP',
+												showCancelButton: true,
+												confirmButtonText: 'Submit',
+												cancelButtonText: 'Cancel',
+												showLoaderOnConfirm: true,
+												footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(` + TypeOtp + `,1)'>Kirim Ulang</p></a>`,
+												preConfirm: (inputValue) => {
+													if (inputValue.trim() === '') {
+														// Show validation message for an empty string
+														Swal.showValidationMessage('OTP tidak boleh kosong');
+													}
+													else if (ErrorMessage != '0') {
+														$("#KodeOtp").val(inputValue.trim());
+														document.getElementById('form').submit();
+													}
+													else {
+														// Trigger form submission
+														$("#KodeOtp").val(inputValue.trim());
+														document.getElementById('form').submit();
+													}
+												},
+												allowOutsideClick: false
+											}).then((result) => {
+
+											});
+										}
+									}
+								});
+							} else if (result.isDenied) {
+								TypeOtp = 2
+								$.ajax({
+									url: '../Login/SendWaOTP',
+									type: 'POST',
+									data: { "Username": Username, "GenerateNewOtp": 1 },
+									success: function (d) {
+										EmailorNumber = d.message;
+										$("#ObjectSend").val(EmailorNumber);
+										$("#TypeSend").val(TypeOtp);
+										if (d.statusCode == "1") {
+											Swal.fire({
+												title: 'Validasi OTP',
+												input: 'text',
+												inputLabel: 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.message,
+												inputPlaceholder: 'Masukan OTP',
+												showCancelButton: true,
+												confirmButtonText: 'Submit',
+												cancelButtonText: 'Cancel',
+												showLoaderOnConfirm: true,
+												footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(` + TypeOtp + `,1)'>Kirim Ulang</p></a>`,
+												preConfirm: (inputValue) => {
+													if (inputValue.trim() === '') {
+														// Show validation message for an empty string
+														Swal.showValidationMessage('OTP tidak boleh kosong');
+													}
+													else if (ErrorMessage != '0') {
+														$("#KodeOtp").val(inputValue.trim());
+														document.getElementById('form').submit();
+													}
+													else {
+														// Trigger form submission
+														$("#KodeOtp").val(inputValue.trim());
+														document.getElementById('form').submit();
+													}
+												},
+												allowOutsideClick: false
+											}).then((result) => {
+
+											});
+										}
+									}
+								});
+							}
+						});
+					}
+				});
+			}
+			else if (Validate == "2") {
+				var TypeSend = '@Model.TypeSent';
+				TypeOtp = TypeSend;
+				var MessageSwal = '';
+
+				if (TypeSend == 1) {
+					MessageSwal = 'Kode OTP telah dikirim melalui Email ke ' + '@Model.ObjectSent'
+				}
+				else if (TypeSend == 2) {
+					MessageSwal = 'Kode OTP telah dikirim melalui Whatsapp ke ' + '@Model.ObjectSent'
+				}
+
+				Swal.fire({
+					title: 'Validasi OTP',
+					input: 'text',
+					inputLabel: MessageSwal,
+					inputPlaceholder: 'Masukan OTP',
+					showCancelButton: true,
+					confirmButtonText: 'Submit',
+					cancelButtonText: 'Cancel',
+					showLoaderOnConfirm: true,
+					footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(` + TypeOtp + `,1)'>Kirim Ulang</p></a>`,
+					preConfirm: (inputValue) => {
+						if (inputValue.trim() === '') {
+							// Show validation message for an empty string
+							Swal.showValidationMessage('OTP tidak boleh kosong');
+						}
+						else if (ErrorMessage != '0') {
+							$("#KodeOtp").val(inputValue.trim());
+							document.getElementById('form').submit();
+						}
+						else {
+							// Trigger form submission
+							$("#KodeOtp").val(inputValue.trim());
+							document.getElementById('form').submit();
+						}
+					},
+					allowOutsideClick: false
+				}).then((result) => {
+
+				});
+			}
+		}
+
+		function SendOtpAgain(TypeSendOtp, GenerateNewOtp){
+			clearInterval(countdownInterval); // Clear the existing countdown interval
+			startCountdown(30, TypeSendOtp);
+			if(TypeSendOtp == 1){
+				$.ajax({
+					url: '../Login/SendEmailOTP',
+					type: 'POST',
+					data: { "Username": Username, "GenerateNewOtp": 1 },
+					success: function (d) {
+						EmailorNumber = d.message;
+						$("#ObjectSend").val(EmailorNumber);
+						$("#TypeSend").val(TypeSendOtp);
+					}
+				});
+			}
+			else if (TypeSendOtp == 2) {
+				$.ajax({
+					url: '../Login/SendWaOTP',
+					type: 'POST',
+					data: { "Username": Username, "GenerateNewOtp": 1 },
+					success: function (d) {
+						EmailorNumber = d.message;
+						$("#ObjectSend").val(EmailorNumber);
+						$("#TypeSend").val(TypeSendOtp);
+					}
+				});
+			}
+			
+		
+		}
+
+		function startCountdown(seconds, typeOtp) {
+			var countdownElement = $('#textFooterOtp');
+			countdownElement.html("Mohon tunggu dalam <b>" + seconds + " detik</b> untuk kirim ulang");
+
+			countdownInterval = setInterval(function () {
+				seconds--;
+
+				countdownElement.html("Mohon tunggu dalam <b>" + seconds + " detik</b> untuk kirim ulang");
+
+				if (seconds === 0) {
+					clearInterval(countdownInterval);
+					// If the countdown reaches 0, replace the footer with the original text
+					replaceFooterOriginalText(typeOtp);
+				}
+			}, 1000);
+		}
+
+		function replaceFooterOriginalText(typeOtp) {
+			var originalText = "Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(" + typeOtp + ", 1)'>Kirim Ulang</a>";
+			$('#textFooterOtp').html(originalText);
+		}
+
+
+		//function submitForm() {
+		//	grecaptcha.ready(function () {
+		//		grecaptcha.execute('6LeHHC0pAAAAAE8XoR5Ukc6vzrkyehEUs4q607Zl', { action: 'submit' }).then(function (token) {
+		//			// Include the token in your form submission
+		//			var form = document.getElementById('form');
+		//			var hiddenInput = document.createElement('input');
+		//			hiddenInput.type = 'hidden';
+		//			hiddenInput.name = 'g-recaptcha-response';
+		//			hiddenInput.value = token;
+		//			form.appendChild(hiddenInput);
+
+		//			// Submit the form
+		//			form.submit();
+		//		});
+		//	});
+		//}
+
+	</script>
+
+
+</body>
+<footer class="pl-5 pr-5 pt-3 pb-2" style="background-color: #50a9ab; font-size: medium">
+	<div id="ContainerPengumuman">
+		<div id="Pengumuman">@Model.Pengumuman</div>
+	</div>
+	<div class="row">
+		<div class="col-md-3">
+			<h5 style="margin: unset"><b style="color: white !important;">Kantor BNI</b></h5>
+			<hr class="primary" style="margin: unset; padding-top: 20px;border-top:none !important;">
+			<p style="color: white; font-weight: 100">
+				Gedung Graha BNI
+				<br />
+				Jl. Jenderal Sudirman Kav.1
+				<br />
+				Jakarta Pusat 10220
+				<br />
+				Indonesia
+			</p>
+		</div>
+
+		<div class="col-md-3">
+			<h5 style="margin: unset"><b style="color: white !important;">Hubungi Service Action Team</b></h5>
+			<hr class="primary" style="margin: unset; padding-top: 20px;border-top:none !important;">
+			<p style="color: white; font-weight: 100">
+				(021)29946046
+				<br />
+				tbs_sat@bni.co.id
+			</p>
+		</div>
+
+		<div class="col-md-3">
+			<h5 style="margin: unset"><b style="color: white !important;">Bantuan & Dukungan</b></h5>
+			<hr class="primary" style="margin: unset; padding-top: 20px;border-top:none !important;">
+			<p style="color: white; font-weight: 100">
+				Syarat & Ketentuan
+			</p>
+		</div>
+
+		<div class="col-md-3">
+			<h5 style="margin: unset"><b style="color: white !important;">BNI berizin dan diawasi oleh</b></h5>
+			<hr class="primary" style="margin: unset; padding-top: 20px;border-top:none !important;">
+			<p style="color: white; font-weight: 100">
+				<img src="@SubDomain/lib/images/IconLPS.png" class="w-25" /><img src="@SubDomain/lib/images/IconOJK.png" class="w-25" style="margin-bottom: 2%"/>
+				<br />
+				BNI berizin dan diawasi oleh Otoritas Jasa Keuangan
+				<br />
+				BNI merupakan peserta penjaminan Lembaga Penjamin Simpanan
+			</p>
+		</div>
+	</div>
+	<hr style="border-top:none !important;" />
+	<div class="row text-center">
+		<div class="col-12">
+			<p style="color: white; font-weight: 100">
+				© Hak Cipta 2023 PT. Bank Negara Indonesia (Persero) Tbk
+			</p>
+		</div>
+	</div>
+</footer>
+</html>

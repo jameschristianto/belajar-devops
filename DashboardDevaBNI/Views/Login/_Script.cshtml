@@ -1,0 +1,44 @@
+﻿<script>
+
+    $(document).ready(function () {
+        $(".eye-toggle").on('click', function () {
+            var passwordElement = document.getElementById("pass");
+            if (passwordElement.getAttribute("type") == "password") {
+                passwordElement.setAttribute("type", "text");
+                $(".pass-eye").removeClass("fa-eye-slash");
+                $(".pass-eye").addClass("fa-eye");
+            } else {
+                passwordElement.setAttribute("type", "password");
+                $(".pass-eye").removeClass("fa-eye");
+                $(".pass-eye").addClass("fa-eye-slash");
+            }
+        });
+
+        $('#txtDaterange').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('DD-MM-yyyy') + ' - ' + picker.endDate.format('DD-MM-yyyy'));
+        });
+
+        $('#txtDaterange').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+        DropdownProvince("TxtProvince", 100, false,);
+        DropdownTahapPenyaluran("TxtTahapPenyaluran", 100, false,);
+
+        var owl = $('.owl-carousel');
+        owl.owlCarousel({
+            items: 1,
+            loop: true,
+            margin: 10,
+            autoplay: true,
+            autoplayTimeout: 1000,
+            autoplayHoverPause: true
+        });
+        $('.play').on('click', function () {
+            owl.trigger('play.owl.autoplay', [1000])
+        })
+        $('.stop').on('click', function () {
+            owl.trigger('stop.owl.autoplay')
+        })
+
+    });
+</script>

@@ -1,0 +1,61 @@
+﻿@model DashboardDevaBNI.Models.TblMasterUser
+
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><span class="pr-2">Create Master Pengguna</span></h5>
+            </div>
+            <div class="card-body">
+
+                <form id="FormData">
+                    @Html.AntiForgeryToken()
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Fullname<span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Fullname, new { @class = "form-control", @value = "", @autocomplete = "off", @required = true })
+                        </div>
+                        <div class="form-group">
+                            <label>Username <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Username, new { @class = "form-control", @value = "", @autocomplete = "off", @required = true })
+                        </div>
+                        <div class="form-group">
+                            <label>Email <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", @value = "", @autocomplete = "off", @required = true, @type = "email" })
+                        </div>
+                        <div class="form-group">
+                            <label>Password <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.Password, new { @class = "form-control", @value = "", @autocomplete = "off", @required = true })
+                        </div>
+                        <div class="form-group">
+                            <label>No Telp <span class="labelMandatory">*</span></label>
+                            @Html.TextBoxFor(m => m.NoTelp, new { @class = "form-control", @value = "", @autocomplete = "off", @required = true })
+                        </div>
+                        <div class="form-group">
+                            <label>Role </label>
+                            @Html.DropDownListFor(m => m.RoleId, (IEnumerable<SelectListItem>)ViewBag.RoleId, "-Silahkan pilih-", new { @required = true, @class = "js-example-placeholder-multiple js-states form-control", @style = "width:100%" })
+                        </div>
+                        <div class="form-group mb-0">
+                            <label>Status <span class="labelMandatory">*</span></label>
+
+                            <div class="custom-control custom-radio">
+                                @Html.RadioButtonFor(model => model.IsActive, true, new { @required = true})&nbsp; Aktif &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                @Html.RadioButtonFor(model => model.IsActive, false, new { @required = true})&nbsp; Tidak Aktif &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="col-sm-12 ml-sm-auto">
+                            <button class="btn btn-success" type="button" id="Submit">
+                                Submit
+                            </button>
+                            <button class="btn btn-danger" type="button" id="Back">
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

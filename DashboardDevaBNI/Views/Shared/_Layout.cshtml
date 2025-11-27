@@ -1,0 +1,370 @@
+﻿@using DashboardDevaBNI.Component;
+@using Microsoft.AspNetCore.Http;﻿
+
+@{
+    var SubDomain = GetConfig.AppSetting["Subdomain:Domain"];
+    var Nama_Pegawai = Context.Session.GetString(SessionConstan.Session_Name);
+    var LastLogin = Context.Session.GetString(SessionConstan.Session_LastLogin);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Portal Deva</title>
+
+    <link rel="stylesheet" href="@SubDomain/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="@SubDomain/css/site.css" rel="stylesheet" />
+
+    <!-- Global -->
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/fontawesome-free/css/all.css" rel="stylesheet" />
+
+    @*<link rel="stylesheet" href="@SubDomain/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="DashboardBOK.styles.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/fontawesome-free/css/all.css" rel="stylesheet" />
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/jqvmap/jqvmap.min.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/dist/css/adminlte.min.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/summernote/summernote-bs4.min.css">*@
+
+    @*<!-- Select2 -->
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+
+    <!-- Upload File -->
+    <link href="@SubDomain/lib/dropify-master/dist/css/dropify.min.css" rel="stylesheet" />
+
+    <!-- Toastr -->
+    <link href="@SubDomain/lib/adminlte-master/plugins/toastr/toastr.min.css" rel="stylesheet">
+
+    <!-- Smartwizard -->
+    <link href="@SubDomain/lib/jquery-smartwizard-master/dist/css/smart_wizard.css" rel="stylesheet" />
+    <link href="@SubDomain/lib/jquery-smartwizard-master/dist/css/smart_wizard_all.css" rel="stylesheet" />
+
+    <!-- DataTables -->
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+    <link rel="stylesheet" href="@SubDomain/lib/adminlte-master/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+
+    <!-- Kendo -->
+    <link href="@SubDomain/lib/kendo/styles/default-main.css" rel="stylesheet" />*@
+
+    <!-- jsPDF -->
+    @*<script href="@SubDomain/lib/jspdf/dist/jspdf.umd.min.js"></script>*@
+
+
+    <style>
+
+        .row-menu {
+            background-color: rgb(255, 217, 102) !important;
+        }
+
+        .row-component {
+            background-color: rgb(255, 230, 153) !important;
+        }
+
+        .row-subcomponent {
+            background-color: rgb(255, 242, 204) !important;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .default-done {
+            color: #fefefe;
+            border-color: #90d4fa;
+            background-color: #90d4fa;
+            cursor: pointer;
+        }
+
+        .labelMandatory {
+            color: red !important;
+        }
+
+        .invalid {
+            color: red;
+        }
+
+    </style>
+
+    <style>
+        body::after {
+            content: var(--watermark-content, "@Nama_Pegawai - ");
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: max-content;
+            font-weight:bold;
+            transform: translate(-50%, -50%) rotate(-45deg); /* Rotate the watermark by 45 degrees */
+            font-size: 40px;
+            color: #00000010; /* Adjust the alpha value for transparency */
+            pointer-events: none; /* Make sure the watermark doesn't interfere with user interactions */
+        }
+    </style>
+    <title>HTML Watermark</title>
+
+    @RenderSection("Styles", required: false)
+</head>
+<div id="ajaxLoading" style="
+    display: none;
+    text-align: center;
+    position: fixed;
+    z-index: 99999 !important;
+    width: 100%;
+    /* top: 50%; */
+    /* margin-top: -263px; */
+    background: rgba(0,0,0,0.5);
+    height: 100%;
+    /* overflow: -webkit-paged-x; */
+    top: 0;
+    left: 0;
+    right: 0;
+    /* z-index: 1020; */a
+    margin-bottom: 0;
+    padding: 0;
+    transition: box-shadow .2s linear;
+    box-shadow: 0 1px 1px rgba(0,0,0,.14);
+    /* opacity: 0.5; */
+    /* display: none; */
+    ">
+    <img alt="" src="@Url.Content("~/lib/images/loading-cube.gif")" style="width:120px; margin-top: 20%; background-color: white;border-radius: 20px;"   />
+</div> 
+<body class="hold-transition sidebar-mini layout-fixed sidebar-collapse">
+    <div class="wrapper">
+
+        <!-- Preloader -->
+        <div class="preloader flex-column justify-content-center align-items-center">
+            <img class="animation__shake" src="@SubDomain/lib/adminlte-master/dist/img/AdminLTELogo.png" alt="AdminLTELogo" height="60" width="60">
+        </div>
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+            @await Html.PartialAsync("_NavBars")
+        </nav>
+        <!-- /.navbar -->
+        <!-- Main Sidebar Container -->
+        <aside class="main-sidebar sidebar-light-info elevation-4">
+            @await Html.PartialAsync("_SideBars")
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            @RenderBody()
+            @Html.Partial("_ModalContent")
+        </div>
+        <!-- /.content-wrapper -->
+        <footer class="main-footer">
+            @await Html.PartialAsync("_Footer")
+        </footer>
+
+        <aside class="control-sidebar control-sidebar-dark">
+            <!-- Control sidebar content goes here -->
+        </aside>
+
+    </div>
+    <!-- Global -->
+    <script src="@SubDomain/lib/jquery/dist/jquery.min.js"></script>
+    <script src="@SubDomain/js/site.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/jquery/jquery.min.js"></script>
+    <script src="@SubDomain/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/dist/js/adminlte.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    @* <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tippy.js/6.3.1/tippy-bundle.umd.min.js"></script>
+
+    <script src="@SubDomain/lib/adminlte-master/plugins/jquery/jquery.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/jquery-ui/jquery-ui.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/chart.js/Chart.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/chart.js/chartjs-plugin-error-bars.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/sparklines/sparkline.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/jqvmap/jquery.vmap.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/jquery-knob/jquery.knob.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/moment/moment.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/daterangepicker/daterangepicker.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/summernote/summernote-bs4.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/dist/js/adminlte.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/dist/js/demo.js"></script>
+    <script src="@SubDomain/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/jquery-validation/jquery.validate.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/jquery-validation/additional-methods.min.js"></script>
+    <!-- Select2 -->
+    <script src="@SubDomain/lib/adminlte-master/plugins/select2/js/select2.full.min.js"></script>
+
+    <!-- Toastr -->
+    <script src="@SubDomain/lib/adminlte-master/plugins/toastr/toastr.min.js"></script>
+
+    <!-- Upload File -->
+    <script src="@SubDomain/lib/dropify-master/dist/js/dropify.min.js"></script>
+
+    <!-- Smartwizard -->
+    <script src="@SubDomain/lib/jquery-smartwizard-master/dist/js/jquery.smartwizard.js"></script>
+
+    <!-- DataTables  & Plugins -->
+    <script src="@SubDomain/lib/adminlte-master/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/datatables-buttons/js/dataTables.buttons.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/datatables-buttons/js/buttons.bootstrap4.min.js"></script>
+
+    <script src="@SubDomain/lib/adminlte-master/plugins/jszip/jszip.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/pdfmake/pdfmake.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/pdfmake/vfs_fonts.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/datatables-buttons/js/buttons.html5.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/datatables-buttons/js/buttons.print.min.js"></script>
+    <script src="@SubDomain/lib/adminlte-master/plugins/datatables-buttons/js/buttons.colVis.min.js"></script>*@
+
+
+
+
+    @Html.Partial("_PartialJavascript")
+
+    <script>
+        //$.widget.bridge('uibutton', $.ui.button)
+
+        $(document).ready(function () {
+
+            //Untuk Ajax Loading
+            $(document).ajaxStart(function () {
+               $('#ajaxLoading').show();
+            }).ajaxStop(function () {
+               $('#ajaxLoading').hide();
+            }).ajaxError(function (xhr, props) {
+               $('#ajaxLoading').hide();
+               if (props.status === 401) {
+                   location.reload();
+               }
+               //else if (props.status === 400) {
+               //    window.location.href = "Error/HttpStatusErrorLayout?statusCode=400"
+               //}
+               //else if (props.status === 404) {
+               //    window.location.href = "Error/HttpStatusErrorLayout?statusCode=404"
+               //}
+               //else if (props.status === 500) {
+               //    //window.location.href = "Error/HttpStatusErrorLayout?statusCode=500"
+               //    //window.location.href = "Account/Login"
+               //}
+               //else {
+               //    //alert("error code-->" + props.status);
+               //    window.location.href = "Account/Login"
+               //}
+            });
+
+            $('[data-toggle="tooltip"]').tooltip();
+            setInterval(function () {
+                var currentDateTime = new Date();
+                var formattedDateTime = ('0' + currentDateTime.getDate()).slice(-2) + '/' +
+                    ('0' + (currentDateTime.getMonth() + 1)).slice(-2) + '/' +
+                            currentDateTime.getFullYear() + ' ' +
+                    ('0' + currentDateTime.getHours()).slice(-2) + ':' +
+                    ('0' + currentDateTime.getMinutes()).slice(-2) + ':' +
+                    ('0' + currentDateTime.getSeconds()).slice(-2);
+                document.documentElement.style.setProperty('--watermark-content', '"@Nama_Pegawai - ' + formattedDateTime + '"');
+            }, 1000);
+
+
+            // setInterval(function () {
+            //     $.ajax({
+            //         type: 'GET',
+            //         url: '../Login/CekSession',
+            //         success: function (hasil) {
+            //             if (hasil == false) {
+            //                 swal({
+            //                     title: "Konfirmasi",
+            //                     text: "Session anda habis harap login kembali",
+            //                     icon: "warning",
+            //                 }).then((willDelete) => {
+            //                     window.location.href = "../Login/Login?a=true";
+            //                 });
+            //             }
+            //         }
+            //     });
+            // }, 120000);
+        });
+
+
+        function ShowModal(classModal) {
+            $(".modal-backdrop").add();
+            //$('#myModal').modal('show')
+            $("." + classModal).addClass("show");
+
+        }
+        function ShowModalPopUp(data) {
+            $(".modal-backdrop").add();
+            $('#exampleModalCenter').modal('show');
+            $("#exampleModalCenter").addClass("show");
+            document.getElementById("content").innerHTML = data;
+
+        }
+        function HideModalPopUp(data) {
+            $(".modal-backdrop").add();
+            $('#exampleModalCenter').modal('hide');
+            $("#exampleModalCenter").addClass("hide");
+            document.getElementById("content").innerHTML = "";
+
+        }
+        function BackDraft() {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+            //$("#Table").DataTable().ajax.reload();
+        }
+
+        // $("#Back").click(function() {
+        //     $('#DivContentBody').show();
+        //     document.getElementById("DivFormBody").innerHTML = "";
+        // });
+
+        function changeActive(a) {
+            
+            $('.nav-link').removeClass('active')
+            $("#" + a).addClass('active')
+        }
+
+        //function fetchData() {
+        //    $.ajax({
+        //        type: 'GET',
+        //        url: '../Login/CekSession',
+        //        success: function (hasil) {
+        //            if (hasil == false) {
+        //                swal({
+        //                    title: "Konfirmasi",
+        //                    text: "Session anda habis harap login kembali",
+        //                    icon: "warning",
+        //                }).then((willDelete) => {
+        //                    window.location.href = "../Login/Login?a=true";
+        //                });
+        //            }
+        //        }
+        //    });
+
+            
+        //}
+        //setInterval(fetchData, 60000);
+
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>
+

@@ -1,0 +1,106 @@
+﻿ @model DashboardDevaBNI.ViewModels.TblNoticeOfPaymentVM
+
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><span class="pr-2">View Notice Of Payment</span></h5>
+            </div>
+            <div class="card-body">
+                <form id="FormData">
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>NopNo <span class="labelMandatory">*</span></label>
+                                @Html.TextBoxFor(m => m.NopNo, new { @class = "form-control", @autocomplete = "off", @disabled = true })
+                            </div>
+                            <div class="form-group">
+                                <label>Rek Name <span class="labelMandatory">*</span></label>
+                                @Html.DropDownListFor(m => m.RekId, (IEnumerable<SelectListItem>)ViewBag.RekId, "-Silahkan pilih-", new { @disabled = true, @class = "js-example-placeholder-multiple js-states form-control", @onchange = "SetValueAcc()", @style = "width:100%" })
+                                @Html.HiddenFor(m => m.RekNameAcc)
+                            </div>
+                            <div class="form-group">
+                                <label>Cur<span class="labelMandatory">*</span></label>
+                                @Html.DropDownListFor(m => m.Cur, (IEnumerable<SelectListItem>)ViewBag.Cur, "-Silahkan pilih-", new { @class = "js-example-placeholder-multiple js-states form-control", @style = "width:100%", @disabled = true })
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>DueDate <span class="labelMandatory">*</span></label>
+                                @Html.TextBoxFor(m => m.DueDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @autocomplete = "off", @disabled = true, @type = "date" })
+                            </div>
+                            <div class="form-group">
+                                <label>Interest Rate (%) </label>
+                                @Html.TextBoxFor(m => m.InterestRate, new { @class = "form-control", @type = "number", @value = "", @autocomplete = "off", @disabled = true })
+                            </div>
+                            <div class="form-group">
+                                <label>Interest Days </label>
+                                @Html.TextBoxFor(m => m.InterestDays, new { @class = "form-control", @type = "number", @value = "", @autocomplete = "off", @disabled = true })
+                            </div>
+                        </div>
+                    </div>
+                    <div id="DivTableCard" class="col-12">
+                        <div class="card card-info">
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table id="TableDetailNopView" class="table table-bordered table-hover w-100">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 10px"></th>
+                                                <th style="width: 150px"></th>
+                                                <th style="width: 150px"></th>
+                                                <th style="width: 150px"></th>
+                                                <th style="width: 150px"></th>
+                                                <th style="width: 150px"></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="DivTableCard" class="col-12">
+                        <div class="card card-info">
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <div class="margin py-3">
+                                        <button type="button" class="btn btn-info" onclick="CreateFileNop('real')"><i class="fas fa-plus"></i> Add Data</button>
+                                    </div>
+                                    <table id="TableFileNopView" class="table table-bordered table-hover w-100">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 10px"></th>
+                                                <th></th>
+                                                <th></th>
+                                                <th></th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="col-sm-12 ml-sm-auto">
+                            <button class="btn btn-success" type="button" id="Submit">
+                                Submit
+                            </button>
+                            <button class="btn btn-danger" type="button" id="Back">
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+

@@ -1,0 +1,482 @@
+﻿@using DashboardDevaBNI.Component;
+@using DashboardDevaBNI.ViewModels;
+@using Microsoft.AspNetCore.Http;
+
+@{
+    var RoleKode = Context.Session.GetString(SessionConstan.Session_RoleKode);
+}
+
+<script>
+    var Table;
+    var State;
+
+    $(document).ready(function () {
+        LoadDataTable();
+    });
+
+    function LoadDataTable(data) {
+        if (Table != undefined) {
+            Table.destroy();
+        }
+
+        Table = $('#Table').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../MasterUser/LoadData',
+                "type": "POST",
+                "datatype": "json",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    swal({
+                        title: "Timeout",
+                        text: "Request Timeout Mohon Reload Halaman Ini!",
+                        icon: "warning",
+                        buttons: true,
+                        dangerMode: true,
+                    })
+                        .then((willDelete) => {
+                            if (willDelete) {
+                                window.location.reload();
+                            }
+                        });
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: "Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data",
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: "Menampilkan 0 Sampai 0 Dari 0 Data",
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        var RoleKode = '@RoleKode';
+
+                        if(RoleKode == '1')
+                        {
+                            return '<td class="project-actions text-right">'
+                                + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="Edit(' + full.id + ')" ><i class="fas fa-pencil-alt"></i> Edit</a>'
+                                + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="View(' + full.id + ')"><i class="fas fa-eye"></i> View</a>'
+                                + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="Delete(' + full.id + ')"><i class="fas fa-trash"></i> Delete</a>'
+                                + '</td>'
+                        }
+                        else{
+                            if(full.roleName == "SuperAdmin")
+                            {
+                                return '<td class="project-actions text-right">'
+                                    + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="View(' + full.id + ')"><i class="fas fa-eye"></i> View</a>'
+                                    + '</td>'
+                            }
+                            else{
+                                return '<td class="project-actions text-right">'
+                                    + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="Edit(' + full.id + ')" ><i class="fas fa-pencil-alt"></i> Edit</a>'
+                                    + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="View(' + full.id + ')"><i class="fas fa-eye"></i> View</a>'
+                                    + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="Delete(' + full.id + ')"><i class="fas fa-trash"></i> Delete</a>'
+                                    + '</td>'
+                            }
+                        }
+                    }
+                },
+                { responsivePriority: 3, "data": "username", title: "Username" },
+                { responsivePriority: 4, "data": "fullname", title: "Full Name" },
+                { responsivePriority: 5, "data": "roleName", title: "Role" },
+                {
+                    responsivePriority: 6, "data": "isActive", title: "Status", "render": function (data, type, full, meta) {
+                        if (full.isActive == true) {
+                            return '<button class="btn btn-success" style="width: 7rem">Aktif</button>'
+                        }
+                        else {
+                            return '<button class="btn btn-danger" style="width: 7rem">Tidak Aktif</button>'
+                        }
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 5
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        //$.fn.dataTable.ext.errMode = 'throw';
+
+        //--------------------------Function untuk melempar parameter search ---------------------//
+        //Untuk melempar parameter search
+        //oTable = $('#Table').DataTable();
+        $('#BtnSearch').click(function () {
+            Table.columns(2).search($('#txtNameSearchParam').val().trim());
+            Table.columns(3).search($('#txtUsernameSearchParam').val().trim());
+
+
+            //hit search ke server
+            Table.draw();
+        });
+
+
+        //---------------------Function untuk reset data pencarian----------------//
+        $('#BtnClearSearch').click(function () {
+            $('#txtNameSearchParam').val("");
+            $('#txtUsernameSearchParam').val("");
+
+            Table.columns(2).search($('#txtNameSearchParam').val().trim());
+            Table.columns(3).search($('#txtUsernameSearchParam').val().trim());
+            //hit search ke server
+            Table.draw();
+        });
+
+        Table.columns.adjust().responsive.recalc();
+    }
+
+
+    function onChangeTypeDinkes(val) {
+
+        $('#formProvince').addClass("d-none");
+        $('#formDistrict').addClass("d-none");
+        $('#formEntitas').addClass("d-none");
+        if (val == '4') {
+            $('#formProvince').removeClass("d-none")
+        }
+        else if (val == '5') {
+            $('#formProvince').removeClass("d-none")
+            $('#formDistrict').removeClass('d-none')
+        } else if (val == "7") {
+            $('#formProvince').removeClass("d-none")
+            $('#formDistrict').removeClass('d-none')
+            $('#formEntitas').removeClass('d-none')
+        }
+    }
+
+
+    function Create() {
+        ShowModal('bd-example-modal-lg');
+        State = "create";
+        UrlPartialView = '../MasterUser/Create';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+
+                        DropdownRoleServerSide("RoleId", 100, false);
+                        ValidationForm();
+                    },);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function Edit(id) {
+        State = "edit";
+        SearchData = { "id": id }
+        UrlPartialView = '../MasterUser/Edit';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        DropdownRoleServerSide("RoleId", 100, false);
+                        ValidationForm();
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function View(id) {
+        State = "view";
+        SearchData = { "id": id }
+        UrlPartialView = '../MasterUser/View';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        DropdownRoleServerSide("RoleId", 100, false);
+                        ValidationForm();
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function Delete(id) {
+        State = "delete";
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: 'GET',
+                        url: '../Login/CekSession',
+                        success: function (hasil) {
+                            if (hasil == true) {
+                                $.ajax({
+                                    url: '../MasterUser/Delete',
+                                    type: 'POST',
+                                    data: { "Ids": id },
+                                    success: function (d) {
+                                        if (d == "") {
+                                            NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                        } else {
+                                            NotifikasiError("Error", "Data gagal dihapus!")
+                                        }
+                                        Table.draw();
+                                    }
+                                });
+                            }
+                            else {
+                                window.location.href = "../Login/Login?a=true";
+                            }
+                        }
+                    });
+                }
+            });
+        return false;
+    }
+
+    function ValidationForm() {
+        //Untuk validasi form
+        var MessagePassword;
+        $('#FormData').validate({
+            rules: {
+                Fullname: {
+                    required: true
+                },
+                Username: {
+                    required: true
+                },
+                Email: {
+                    required: true
+                },
+                NoTelp: {
+                    required: true
+                },
+                RoleId: {
+                    required: true
+                },
+                IsActive: {
+                    required: true
+                },
+                ProvinceKode: {
+                    required: function () {
+                        if ($("#ProvinceKode").hasClass("d-none")) {
+                            return false
+                        }
+                        else {
+                            return true
+                        }
+                    },
+                },
+                DistrictKode: {
+                    required: function () {
+                        if ($("#DistrictKode").hasClass("d-none")) {
+                            return false
+                        }
+                        else {
+                            return true
+                        }
+                    },
+                },
+                PuskesmasKode: {
+                    required: function () {
+                        if ($("#PuskesmasKode").hasClass("d-none")) {
+                            return false
+                        }
+                        else {
+                            return true
+                        }
+                    },
+                },
+                Password: {
+                    required: function () {
+                        var Password = $("#Password").val();
+                        if (State == "create") {
+                            return true;
+                        }
+                        else if (State == "edit" && Password != "") {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    },
+                    customPasswordValidation: function () {
+                        var Password = $("#Password").val();
+                        if (State == "create") {
+                            return true;
+                        }
+                        else if (State == "edit" && Password != "") {
+                            return true;
+                        }
+                        else {
+                            return false;
+                        }
+                    }
+                },
+            },
+            messages: {
+                Password: {
+                    customPasswordValidation: function () {
+                        return MessagePassword;
+                    }
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+        $.validator.addMethod("customPasswordValidation", function (value, element) {
+            var passworda = $("#Password").val();
+            const uppercaseLetters = passworda.match(/[A-Z]/g);
+            const numbers = passworda.match(/[0-9]/g);
+            const specialCharacters = passworda.match(/[!"#$%&'()*+,-./:;<=>?@@[\]^_`{|}~]/g);
+
+            if (passworda.length < 8 || passworda.length > 15) {
+                MessagePassword = "Kata sandi harus terdiri dari 8 hingga 15 karakter.";
+                return false;
+            } else if (!uppercaseLetters || uppercaseLetters.length < 2) {
+                MessagePassword = "Kata sandi harus memiliki minimal dua huruf besar.";
+                return false;
+            } else if (!numbers || numbers.length < 2) {
+                MessagePassword = "Kata sandi harus memiliki minimal dua angka";
+                return false;
+            } else if (!specialCharacters || specialCharacters.length < 2) {
+                MessagePassword = "Kata sandi harus memiliki minimal dua karakter khusus.";
+                return false;
+            }
+            return true;
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+        $(".eye-toggle").click(function () {
+            var passwordElement = document.getElementById("Password");
+            if (passwordElement.getAttribute("type") == "password") {
+                passwordElement.setAttribute("type", "text");
+                $(".pass-eye").removeClass("fa-eye-slash");
+                $(".pass-eye").addClass("fa-eye");
+            } else {
+                passwordElement.setAttribute("type", "password");
+                $(".pass-eye").removeClass("fa-eye");
+                $(".pass-eye").addClass("fa-eye-slash");
+            }
+        });
+
+        $('#Submit').click(function () {
+            debugger;
+            var url = '';
+            var $valid = $("#FormData").valid();
+            if (!$valid) {
+                //alert("False");
+                //$("#FormData").focusInvalid();
+                // $validator.focusInvalid();
+                return false;
+            } else {
+                if (State == "create") {
+                    url = '../MasterUser/SubmitCreate';
+                }
+                else {
+                    url = '../MasterUser/SubmitEdit';
+                }
+                //Cek session terlebih dahulu
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            console.log("masuk if");
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: url,
+                                type: 'POST',
+                                data: $('#FormData').serialize(),
+                                success: function (d) {
+                                    console.log("d: ", d);
+                                    //Tampilkan alert status
+                                    if (d == "") {
+                                        console.log("masuk if sukses");
+                                        BackDraft();
+                                        NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                        Table.draw();
+                                    } else {
+                                        NotifikasiError("Error", d)
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+        
+        $("#Back").click(function () {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+        });
+    }
+
+</script>

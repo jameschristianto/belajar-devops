@@ -1,0 +1,143 @@
+﻿ @model DashboardDevaBNI.ViewModels.TblNoticeOfPaymentVM
+
+@Html.Partial("_Script")
+
+
+<div id="DivContentBody">
+    <!-- Header Section -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6 judul" style="display: flex; align-items: center;">
+                    <div class="icon-svg" style="margin-right: 10px;">
+                        <i class="fas fa-pen-to-square" style="font-size: 30px;"></i>
+                    </div>
+                    <h1 class="judul-halaman" style="font-size: 30px; margin: 20;">Edit Notice Of Payment</h1>
+                </div><!-- /.col -->
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item">
+                            <a href="../Home/Index">Home</a>
+                        </li>
+                        <li class="breadcrumb-item active">Edit Notice Of Payment</li>
+                    </ol>
+                </div><!-- /.col -->
+            </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+    </section>
+</div>
+
+<!-- Main Content Section -->
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <form id="FormData">
+                            <!-- Your form content here -->
+                            @Html.AntiForgeryToken()
+                            @Html.HiddenFor(m => m.Id)
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>NopNo <span class="labelMandatory">*</span></label>
+                                        @Html.TextBoxFor(m => m.NopNo, new { @class = "form-control", @autocomplete = "off", @required = true })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Rek Name <span class="labelMandatory">*</span></label>
+                                        @Html.DropDownListFor(m => m.RekId, (IEnumerable<SelectListItem>)ViewBag.RekId, "-Silahkan pilih-", new { @required = true, @class = "js-example-placeholder-multiple js-states form-control", @onchange = "SetValueAcc()", @style = "width:100%" })
+                                        @Html.HiddenFor(m => m.RekNameAcc)
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Cur<span class="labelMandatory">*</span></label>
+                                        @Html.DropDownListFor(m => m.Cur, (IEnumerable<SelectListItem>)ViewBag.Cur, "-Silahkan pilih-", new { @class = "js-example-placeholder-multiple js-states form-control", @style = "width:100%", @required = true })
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>DueDate <span class="labelMandatory">*</span></label>
+                                        @Html.TextBoxFor(m => m.DueDate, "{0:yyyy-MM-dd}", new { @class = "form-control", @autocomplete = "off", @required = true, @type = "date" })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Interest Rate (%) </label>
+                                        @Html.TextBoxFor(m => m.InterestRate, new { @class = "form-control", @type = "number", @value = "", @autocomplete = "off", @required = false })
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Interest Days </label>
+                                        @Html.TextBoxFor(m => m.InterestDays, new { @class = "form-control", @type = "number", @value = "", @autocomplete = "off", @required = false })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="DivTableCard" class="col-12">
+                                <div class="card card-info">
+                                    <div class="card-body">
+                                        <!-- Your table content here -->
+                                        <div class="table-container">
+                                            <div class="margin py-3">
+                                                @* <button type="button" class="btn btn-info" onclick="CreateDetailNop('real')"><i class="fas fa-plus"></i> Add Data</button> *@
+                                            </div>
+                                            <table id="TableDataDetailNopNew" class="table table-bordered table-hover w-100">
+                                                <thead>
+                                                    <tr>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th style="width: 150px"></th>
+                                                        <th style="width: 150px"></th>
+                                                        <th style="width: 150px"></th>
+                                                        <th style="width: 150px"></th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="DivTableCard" class="col-12">
+                                <div class="card card-info">
+                                    <div class="card-body">
+                                        <div class="table-container">
+                                            <div class="margin py-3">
+                                                <button type="button" class="btn btn-info" onclick="CreateFileNop('real')"><i class="fas fa-plus"></i> Add Data</button>
+                                            </div>
+                                            <table id="TableFileNop" class="table table-bordered table-hover w-100">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 10px"></th>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th></th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <div class="col-sm-12 ml-sm-auto">
+                                    <button class="btn btn-success" type="button" id="Submit">
+                                        Submit
+                                    </button>
+                                    <button class="btn btn-danger" type="button" id="Back">
+                                        Batal
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</div>
+
+
+
+
+
+

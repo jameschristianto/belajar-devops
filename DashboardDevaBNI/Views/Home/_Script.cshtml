@@ -1,0 +1,101 @@
+﻿<script>
+
+    setInterval(function () {
+        var currentDateTime = new Date();
+        var hours = ('0' + currentDateTime.getHours()).slice(-2);
+        var minutes = ('0' + currentDateTime.getMinutes()).slice(-2);
+        var formattedTime = hours + ':' + minutes;
+        document.getElementById('Time').textContent = formattedTime;
+
+        var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        var months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+        var dayName = days[currentDateTime.getDay()];
+        var monthName = months[currentDateTime.getMonth()];
+        var dayDate = currentDateTime.getDate();
+        var formattedDay = dayName + ', ' + monthName + ' ' + dayDate;
+        document.getElementById('Day').textContent = formattedDay;
+
+        var greeting;
+        if (currentDateTime.getHours() < 12) {
+            greeting = "Good Morning";
+        } else if (currentDateTime.getHours() < 17) {
+            greeting = "Good Afternoon";
+        } else if (currentDateTime.getHours() < 21) {
+            greeting = "Good Evening";
+        } else {
+            greeting = "Good Night";
+        }
+        document.getElementById('Greeting').textContent = greeting;
+    }, 5000);
+
+    var ticksStyle = {
+        fontColor: '#495057',
+        fontStyle: 'bold'
+    }
+
+    var mode = 'index'
+    var intersect = true
+
+    var $salesChart = $('#sales-chart')
+    // eslint-disable-next-line no-unused-vars
+    var salesChart = new Chart($salesChart, {
+        type: 'bar',
+        data: {
+            labels: ['JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+            datasets: [
+                {
+                    backgroundColor: '#007bff',
+                    borderColor: '#007bff',
+                    data: [100, 200, 300, 250, 270, 250, 300]
+                },
+                {
+                    backgroundColor: '#ced4da',
+                    borderColor: '#ced4da',
+                    data: [70, 170, 270, 200, 180, 150, 200]
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            tooltips: {
+                mode: mode,
+                intersect: intersect
+            },
+            hover: {
+                mode: mode,
+                intersect: intersect
+            },
+            legend: {
+                display: false
+            },
+            scales: {
+                yAxes: [{
+                    // display: false,
+                    gridLines: {
+                        display: true,
+                        lineWidth: '4px',
+                        color: 'rgba(0, 0, 0, .2)',
+                        zeroLineColor: 'transparent'
+                    },
+                    ticks: $.extend({
+                        beginAtZero: true,
+
+                        // Include a dollar sign in the ticks
+                        callback: function (value) {
+                            return  value
+                        }
+                    }, ticksStyle)
+                }],
+                xAxes: [{
+                    display: true,
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: ticksStyle
+                }]
+            }
+        }
+    })
+
+</script>

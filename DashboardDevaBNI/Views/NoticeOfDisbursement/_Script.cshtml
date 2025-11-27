@@ -1,0 +1,1769 @@
+﻿
+
+
+<script>
+    var Table;
+    var TableDataDetailNodTemp;
+    var TableDetailNod;
+    var TableDetailNodView;
+    var TableDataFileNodTemp;
+    var TableFileNod;
+    var TableFileNodView;
+    var State;
+    var StateDetailNod;
+    var StateFileNod;
+    var RandomString;
+
+    $(document).ready(function () {
+        LoadDataTable();
+        $('#txtNodDateSearchParam').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                format: 'DD/MM/yyyy',
+                cancelLabel: 'Clear'
+            }
+        });
+
+        $('#txtNodDateSearchParam').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/yyyy') + ' to ' + picker.endDate.format('DD/MM/yyyy'));
+        });
+
+        $('#txtNodDateSearchParam').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+        $("#txtNodDateSearchParam").on("input keydown keyup mousedown mouseup", function (e) {
+            e.preventDefault();
+        });
+    });
+
+    function LoadDataTable(data) {
+        if (Table != undefined) {
+            Table.destroy();
+        }
+
+        Table = $('#Table').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfDisbursement/LoadData',
+                "type": "POST",
+                "datatype": "json",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: "Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data, <span id='selectedRowCount'>0 rows selected</span>",
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+
+            columns: [
+                {
+                    responsivePriority: 1, "data": null, title: "", orderable: false, defaultContent: '', title: "<input type='checkbox' id='checkAll'>", render: function (data, type, full, meta) {
+                        // Check if the status is 'done'
+                        if (full.status === 'Verified') {
+                            return '<input type="checkbox" disabled>';
+                        } else {
+                            return '<input type="checkbox">';
+                        }
+                    }
+                },
+                { responsivePriority: 2, "data": "number", title: "No" },
+                {
+                    responsivePriority: 3,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        if (full.status === 'Verified') {
+                            return '<td class="project-actions text-right">' +
+                                '<div class="dropdown">' +
+                                '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                                'Action' +
+                                '</button>' +
+                                '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "EditView(' + full.id + ')" > <i class="fas fa-pencil-alt"> </i> Edit</a >' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "View(' + full.id + ')" > <i class="fas fa-eye"> </i> View</a >' +
+                                '</div>' +
+                                '</div>' +
+                                '</td>'
+                        } else {
+                            return '<td class="project-actions text-right">' +
+                                '<div class="dropdown">' +
+                                '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                                'Action' +
+                                '</button>' +
+                                '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "SendDataSingle(' + full.id + ')" > <i class="fas fa-paper-plane"> </i> Send</a >' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "Edit(' + full.id + ')" > <i class="fas fa-pencil-alt"> </i> Edit</a >' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "View(' + full.id + ')" > <i class="fas fa-eye"> </i> View</a >' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "Delete(' + full.id + ')" > <i class="fas fa-trash"> </i> Delete</a >' +
+                                '</div>' +
+                                '</div>' +
+                                '</td>'
+                        }
+
+                    }
+                },
+                { responsivePriority: 4, "data": "nodNo", title: "Nod No" },
+                {
+                    responsivePriority: 5, "data": "nodDate", title: "Nod Date", className: "text-left",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = moment(data).locale('id').format('DD MMM yyyy')
+                        }
+                        return format
+                    }
+                },
+                {
+                    responsivePriority: 6, "data": "valueDate", title: "Value Date", className: "text-left",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = moment(data).locale('id').format('DD MMM yyyy')
+                        }
+                        return format
+                    }
+                },
+                { responsivePriority: 7, "data": "cur", title: "Currency" },
+                {
+                    responsivePriority: 8, "data": "lastSentDate", title: "Last Sent Date", className: "text-left",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = moment(data).locale('id').format('DD MMM yyyy')
+                        }
+                        return format
+                    }
+                },
+                {
+                    responsivePriority: 9, "data": "status", title: "Status",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = data
+                        }
+                        return format
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 8
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        $('#checkAll').on('click', function () {
+            var checkboxes = $('tbody input[type="checkbox"]:not(:disabled)');
+            checkboxes.prop('checked', $(this).prop('checked'));
+            updateSelectedRowCount();
+        });
+
+        // Handle click event for individual checkboxes
+        $('tbody').on('click', 'input[type="checkbox"]', function () {
+            updateSelectedRowCount();
+        });
+
+        // Function to update the count of selected rows
+        function updateSelectedRowCount() {
+            var selectedRowCount = $('tbody input[type="checkbox"]:checked').length;
+            $('#selectedRowCount').text(selectedRowCount + (selectedRowCount === 1 ? ' row selected' : ' rows selected'));
+            $('#prosesDataBtn').prop('disabled', selectedRowCount >= 0);
+            $('#prosesDataBtn').prop('disabled', selectedRowCount === 0);
+        }
+
+
+        $('#BtnSearch').click(function () {
+            Table.columns(2).search($('#txtNodNoSearchParam').val());
+            Table.columns(3).search($('#txtNodDateSearchParam').val());
+
+            //hit search ke server
+            Table.draw();
+        });
+
+
+        //---------------------Function untuk reset data pencarian----------------//
+        $('#BtnClearSearch').click(function () {
+            $('#txtNodNoSearchParam').val("");
+            $('#txtNodDateSearchParam').val("");
+
+            Table.columns(2).search($('#txtNodNoSearchParam').val());
+            Table.columns(3).search($('#txtNodDateSearchParam').val());
+            //hit search ke server
+            Table.draw();
+        });
+
+        Table.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableDataDetailNodTemp(data) {
+        if (TableDataDetailNodTemp != undefined) {
+            TableDataDetailNodTemp.destroy();
+        }
+
+        TableDataDetailNodTemp = $('#TableDataDetailNodTemp').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfDisbursement/LoadDataDetailNodTemp',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "randomstring": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteDetailNodTemp(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "creditorRef", title: "Creditor Ref" },
+                {
+                    responsivePriority: 4, "data": "amount", title: "Amount", className: "text-right",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = currencyFormat(parseFloat(data));
+                        }
+                        return format;
+                    }
+                },
+                {
+                    responsivePriority: 5, "data": "amountIDR", title: "Amount IDR", className: "text-right",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = currencyFormat(parseFloat(data));
+                        }
+                        return format;
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableDataDetailNodTemp.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableDetailNod(data) {
+        if (TableDetailNod != undefined) {
+            TableDetailNod.destroy();
+        }
+
+        TableDetailNod = $('#TableDetailNod').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfDisbursement/LoadDataDetailNod',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NodId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteDetailNod(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "creditorRef", title: "Creditor Ref" },
+                {
+                    responsivePriority: 4, "data": "amount", title: "Amount", className: "text-right",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = currencyFormat(parseFloat(data));
+                        }
+                        return format;
+                    }
+                },
+                {
+                    responsivePriority: 5, "data": "amountIDR", title: "Amount IDR", className: "text-right",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = currencyFormat(parseFloat(data));
+                        }
+                        return format;
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableDetailNod.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableDetailNodView(data) {
+        if (TableDetailNodView != undefined) {
+            TableDetailNodView.destroy();
+        }
+
+        TableDetailNodView = $('#TableDetailNodView').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfDisbursement/LoadDataDetailNod',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NodId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                { responsivePriority: 2, "data": "creditorRef", title: "Creditor Ref" },
+                {
+                    responsivePriority: 3, "data": "amount", title: "Amount", className: "text-right",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = currencyFormat(parseFloat(data));
+                        }
+                        return format;
+                    }
+                },
+                {
+                    responsivePriority: 4, "data": "amountIDR", title: "Amount IDR", className: "text-right",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = currencyFormat(parseFloat(data));
+                        }
+                        return format;
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 3
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableDetailNodView.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableDataFileNodTemp(data) {
+        if (TableDataFileNodTemp != undefined) {
+            TableDataFileNodTemp.destroy();
+        }
+
+        TableDataFileNodTemp = $('#TableDataFileNodTemp').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfDisbursement/LoadDataFileNodTemp',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "randomstring": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DownloadFilePendukungTemp(' + full.id + ')" > <i class="fas fa-download"> </i> Download</a >' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteFileNodTemp(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "fileName", title: "File Name" },
+                { responsivePriority: 4, "data": "fileSize", title: "File Size" },
+                { responsivePriority: 5, "data": "fileExt", title: "File Ext" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableDataFileNodTemp.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableFileNod(data) {
+        if (TableFileNod != undefined) {
+            TableFileNod.destroy();
+        }
+
+        TableFileNod = $('#TableFileNod').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfDisbursement/LoadDataFileNod',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NodId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DownloadFilePendukung(' + full.id + ')" > <i class="fas fa-download"> </i> Download</a >' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteFileNod(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "fileName", title: "File Name" },
+                { responsivePriority: 4, "data": "fileSize", title: "File Size" },
+                { responsivePriority: 5, "data": "fileExt", title: "File Ext" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableFileNod.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableFileNodView(data) {
+        if (TableFileNodView != undefined) {
+            TableFileNodView.destroy();
+        }
+
+        TableFileNodView = $('#TableFileNodView').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfDisbursement/LoadDataFileNod',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NodId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DownloadFilePendukung(' + full.id + ')" > <i class="fas fa-download"> </i> Download</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "fileName", title: "File Name" },
+                { responsivePriority: 4, "data": "fileSize", title: "File Size" },
+                { responsivePriority: 5, "data": "fileExt", title: "File Ext" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableFileNodView.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableFileNodEditView(data) {
+        if (TableFileNodView != undefined) {
+            TableFileNodView.destroy();
+        }
+
+        TableFileNodView = $('#TableFileNodView').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfDisbursement/LoadDataFileNod',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NodId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DownloadFilePendukung(' + full.id + ')" > <i class="fas fa-download"> </i> Download</a >' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteFileNod(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "fileName", title: "File Name" },
+                { responsivePriority: 4, "data": "fileSize", title: "File Size" },
+                { responsivePriority: 5, "data": "fileExt", title: "File Ext" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableFileNodView.columns.adjust().responsive.recalc();
+    }
+
+    function Create() {
+        ShowModal('bd-example-modal-lg');
+        State = "create";
+        UrlPartialView = '../NoticeOfDisbursement/Create';
+        //Cek session masih aktif atau tidak
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        DropdownLookupServerSide("Cur", "Currency", 50, false);
+                        RandomString = RandomStringView(5);
+                        LoadDataTableDataDetailNodTemp(RandomString)
+                        LoadDataTableDataFileNodTemp(RandomString)
+                        ValidationForm();
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function CreateBulk() {
+        ShowModal('bd-example-modal-lg');
+        State = "create";
+        UrlPartialView = '../NoticeOfDisbursement/CreateBulk';
+        //Cek session masih aktif atau tidak
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        RandomString = RandomStringView(5);
+                        $('.dropify').dropify({
+                            error: {
+                                'fileSize': 'The file size is too big (2MB max).',
+                            }
+                        });
+                        ValidationFormBulk();
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function CreateDetailNod(dataP) {
+        StateDetailNod = dataP;
+        UrlPartialView = '../NoticeOfDisbursement/CreateDetailNod';
+        //Cek session masih aktif atau tidak
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        var modalbody = $('#content-lg');
+                        modalbody.html(data);
+                        $('#modal-lg').modal({
+                            backdrop: 'static',
+                            keyboard: false,
+                        });
+                        $('#modal-lg').on('shown.bs.modal', function () {
+                            DropdownCreditorRefServerSide("CreditorRef", 50, false);
+                            InputOnlyNumber("Amount");
+                            InputOnlyNumber("AmountIdr");
+
+                        });
+                        ValidationFormDetailNod();
+
+                        $(document).on('click', '[data-dismiss="modal"]', function () {
+                            $('#modal-lg').modal('hide');
+                        });
+                        $("#modal-lg").modal('show');
+
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function CreateFileNod(dataP) {
+        StateFileNod = dataP;
+        UrlPartialView = '../NoticeOfDisbursement/CreateFileNod';
+        //Cek session masih aktif atau tidak
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        var modalbody = $('#content-lg');
+                        modalbody.html(data);
+                        $('#modal-lg').modal({
+                            backdrop: 'static',
+                            keyboard: false,
+                        });
+                        $('.dropify').dropify({
+                            error: {
+                                'fileSize': 'The file size is too big (10MB max).',
+                            }
+                        });
+                        ValidationFormFileNod();
+
+                        $(document).on('click', '[data-dismiss="modal"]', function () {
+                            $('#modal-lg').modal('hide');
+                        });
+                        $("#modal-lg").modal('show');
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function Edit(id) {
+        State = "edit";
+        SearchData = { "id": id }
+        UrlPartialView = '../NoticeOfDisbursement/Edit';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        DropdownLookupServerSide("Cur", "Currency", 50, false);
+                        LoadDataTableDetailNod($("#Id").val())
+                        LoadDataTableFileNod($("#Id").val())
+                        ValidationForm();
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function EditView(id) {
+        State = "edit";
+        SearchData = { "id": id }
+        UrlPartialView = '../NoticeOfDisbursement/EditView';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        DropdownLookupServerSide("Cur", "Currency", 50, false);
+                        LoadDataTableDetailNodView($("#Id").val())
+                        LoadDataTableFileNodEditView($("#Id").val())
+                        ValidationForm();
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function View(id) {
+        State = "view";
+        SearchData = { "id": id }
+        UrlPartialView = '../NoticeOfDisbursement/View';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        DropdownLookupServerSide("Cur", "Currency", 50, false);
+                        LoadDataTableDetailNodView($("#Id").val())
+                        LoadDataTableFileNodView($("#Id").val())
+                        ValidationForm();
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function Delete(id) {
+        State = "delete";
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: '../NoticeOfDisbursement/Delete',
+                                type: 'POST',
+                                data: { "Ids": id },
+                                success: function (d) {
+                                    if (d == "") {
+                                        NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                    } else {
+                                        NotifikasiError("Error", "Data gagal dihapus!")
+                                    }
+                                    Table.draw();
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+        return false;
+    }
+    function DeleteDetailNodTemp(id) {
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: '../NoticeOfDisbursement/DeleteDetailNodTemp',
+                                type: 'POST',
+                                data: { "Ids": id },
+                                success: function (d) {
+                                    if (d == "") {
+                                        NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                    } else {
+                                        NotifikasiError("Error", "Data gagal dihapus!")
+                                    }
+                                    TableDataDetailNodTemp.draw();
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+        return false;
+    }
+    function DeleteDetailNod(id) {
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: 'GET',
+                        url: '../Login/CekSession',
+                        success: function (hasil) {
+                            if (hasil == true) {
+                                //Cek session terlebih dahulu
+                                $.ajax({
+                                    url: '../NoticeOfDisbursement/DeleteDetailNod',
+                                    type: 'POST',
+                                    data: { "Ids": id },
+                                    success: function (d) {
+                                        if (d == "") {
+                                            NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                        } else {
+                                            NotifikasiError("Error", "Data gagal dihapus!")
+                                        }
+                                        TableDetailNod.draw();
+                                    }
+                                });
+                            }
+                            else {
+                                window.location.href = "../Login/Login?a=true";
+                            }
+                        }
+                    });
+                }
+            });
+        return false;
+    }
+    function DeleteFileNodTemp(id) {
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: '../NoticeOfDisbursement/DeleteFileNodTemp',
+                                type: 'POST',
+                                data: { "Ids": id },
+                                success: function (d) {
+                                    if (d == "") {
+                                        NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                    } else {
+                                        NotifikasiError("Error", "Data gagal dihapus!")
+                                    }
+                                    TableDataFileNodTemp.draw();
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+        return false;
+    }
+    function DeleteFileNod(id) {
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: '../NoticeOfDisbursement/DeleteFileNod',
+                                type: 'POST',
+                                data: { "Ids": id },
+                                success: function (d) {
+                                    if (d == "") {
+                                        NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                    } else {
+                                        NotifikasiError("Error", "Data gagal dihapus!")
+                                    }
+                                    TableFileNod.draw();
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+        return false;
+    }
+
+    function ValidationForm() {
+        //Untuk validasi form
+
+        $('#FormData').validate({
+            rules: {
+                NodNo: {
+                    required: true
+                },
+                NodDate: {
+                    required: true
+                },
+                Cur: {
+                    required: true
+                },
+                ValueDate: {
+                    required: true
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+        $('#Submit').click(function () {
+            var url = '';
+            var $valid = $("#FormData").valid();
+            if (!$valid) {
+                //alert("False");
+                $validator.focusInvalid();
+                return false;
+            } else {
+                if (State == "create") {
+                    url = '../NoticeOfDisbursement/SubmitCreate';
+                }
+                else {
+                    url = '../NoticeOfDisbursement/SubmitEdit';
+                }
+                //Cek session terlebih dahulu
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: url,
+                                type: 'POST',
+                                data: $('#FormData').serialize() + "&randomString=" + RandomString,
+                                success: function (d) {
+                                    //Tampilkan alert status
+                                    if (d == "") {
+                                        BackDraft();
+                                        NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                        Table.draw();
+                                    } else {
+                                        NotifikasiError("Error", d)
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#Back").click(function () {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+        });
+    }
+    function ValidationFormDetailNod() {
+        //Untuk validasi form
+
+        $('#FormDetailNod').validate({
+            rules: {
+                CreditorRef: {
+                    required: true
+                },
+                Amount: {
+                    required: true
+                },
+                AmountIdr: {
+                    required: true
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+        $('#SubmitDetailNod').click(function () {
+            var url = '';
+            var uniq = '';
+            var $validRekening = $("#FormDetailNod").valid();
+            if (!$validRekening) {
+                //alert("False");
+                $validator.focusInvalid();
+                return false;
+            } else {
+                if (StateDetailNod == "temp") {
+                    url = '../NoticeOfDisbursement/SubmitCreateDetailNodTemp';
+                    uniq = RandomString;
+                }
+                else {
+                    url = '../NoticeOfDisbursement/SubmitCreateDetailNod';
+                    uniq = $("#Id").val();
+                }
+                //Cek session terlebih dahulu
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: url,
+                                type: 'POST',
+                                data: $('#FormDetailNod').serialize() + "&uniq=" + uniq,
+                                success: function (d) {
+                                    debugger;
+                                    //Tampilkan alert status
+                                    if (d == "") {
+                                        $('#modal-lg').modal('hide');
+                                        NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                        if (StateDetailNod == "temp") {
+                                            TableDataDetailNodTemp.draw();
+                                        }
+                                        else {
+                                            TableDetailNod.draw();
+                                        }
+                                    } else {
+                                        NotifikasiError("Error", d)
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#Back").click(function () {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+        });
+    }
+    function ValidationFormBulk() {
+
+        $('#FormDataBulk').validate({
+            rules: {
+                File: {
+                    required: true
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+        $('#SubmitBulk').click(function () {
+            var url = '';
+            var $validBulk = $("#FormDataBulk").valid();
+            if (!$validBulk) {
+                //alert("False");
+                $validator.focusInvalid();
+                return false;
+            } else {
+                //Cek session terlebih dahulu
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+
+                            var form = new FormData();
+                            form.append('File', $("#File")[0].files[0]);
+                            form.append('RandomString', RandomString);
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: '../NoticeOfDisbursement/SubmitExcelCreate',
+                                type: 'POST',
+                                mimeType: "multipart/form-data",
+                                processData: false,
+                                contentType: false,
+                                data: form,
+                                success: function (d) {
+                                    //Tampilkan alert status
+                                    if (d == "") {
+                                        BackDraft();
+                                        NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                        Table.draw();
+                                    } else {
+                                        NotifikasiError("Error", d)
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#Back").click(function () {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+        });
+    }
+    function ValidationFormFileNod() {
+
+        $('#FormDataFile').validate({
+            rules: {
+                File: {
+                    required: true
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+        $('#SubmitFile').click(function () {
+            var url = '';
+            var $validFileNod = $("#FormDataFile").valid();
+            if (!$validFileNod) {
+                //alert("False");
+                $validator.focusInvalid();
+                return false;
+            } else {
+                //Cek session terlebih dahulu
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            if (StateFileNod == "temp") {
+                                url = '../NoticeOfDisbursement/SubmitCreateFileNodTemp';
+                                uniq = RandomString;
+                            }
+                            else {
+                                url = '../NoticeOfDisbursement/SubmitCreateFileNod';
+                                uniq = $("#Id").val();
+                            }
+
+                            var form = new FormData();
+                            form.append('File', $("#File")[0].files[0]);
+                            form.append('uniq', uniq);
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: url,
+                                type: 'POST',
+                                mimeType: "multipart/form-data",
+                                processData: false,
+                                contentType: false,
+                                data: form,
+                                success: function (d) {
+                                    //Tampilkan alert status
+                                    if (d == "") {
+                                        $('#modal-lg').modal('hide');
+                                        NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                        if (StateFileNod == "temp") {
+                                            TableDataFileNodTemp.draw();
+                                        }
+                                        else {
+                                            TableFileNod.draw();
+                                        }
+                                    } else {
+                                        NotifikasiError("Error", d)
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#Back").click(function () {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+        });
+    }
+
+    function SendDataSingle(Id) {
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    $.ajax({
+                        url: '../NoticeOfDisbursement/SendToDeva',
+                        type: 'POST',
+                        data: { "Ids": Id },
+                        success: function (d) {
+                            // if (d == "") {
+                            //     NotifikasiSukses("Sukses", "Data berhasil dikirim!");
+                            // } else {
+                            //     NotifikasiError("Error", "Data gagal dikirim!")
+                            // }
+                            NotifikasiInfo(d)
+                            Table.draw();
+                        }
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function SendData() {
+        var selectedIds = [];
+
+        $('tbody input[type="checkbox"]:checked').each(function () {
+            var rowData = Table.row($(this).closest('tr')).data();
+            selectedIds.push(rowData.id);
+        });
+
+        if (selectedIds.length != 0) {
+            $.ajax({
+                type: 'GET',
+                url: '../Login/CekSession',
+                success: function (hasil) {
+                    if (hasil == true) {
+                        //Cek session terlebih dahulu
+                        $.ajax({
+                            url: '../NoticeOfDisbursement/SendToDeva',
+                            type: 'POST',
+                            data: { "Ids": selectedIds.join() },
+                            success: function (d) {
+                                NotifikasiInfo(d)
+                                Table.draw();
+                            }
+                        });
+                    }
+                    else {
+                        window.location.href = "../Login/Login?a=true";
+                    }
+                }
+            });
+        }
+        else {
+            NotifikasiGagal("Mohon pilih data yang akan di kirim")
+        }
+    }
+
+    function PrintExcelNoD() {
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    var TypeExcel = "xlsx"
+                    $.ajax({
+                        url: '../NoticeOfDisbursement/PrintExcelNoD',
+                        type: 'POST',
+                        data: {
+                            Tanggal: $("#txtNodDateSearchParam").val(),
+                            TypeExcel: TypeExcel
+                        },
+                        success: function (d) {
+                            debugger;
+                            NotifikasiInfo(d)
+                        }
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function PrintPdfNoD() {
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    $.ajax({
+                        url: '../NoticeOfDisbursement/PrintPDFNoD',
+                        type: 'POST',
+                        data: {
+                            Tanggal: $("#txtNodDateSearchParam").val(),
+                        },
+                        success: function (d) {
+                            NotifikasiInfo(d)
+                        }
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function DownloadFilePendukungTemp(id) {
+        var url = "";
+        url = '../NoticeOfDisbursement/DownloadFilePendukungTemp';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: { 'Tanggal': $("#txtNodDateSearchParam").val(), 'id': id },
+                        xhrFields: {
+                            responseType: 'blob' // Set the response type to blob
+                        },
+                        success: function (data, textStatus, request) {
+
+                            // Extract the filename from the Content-Disposition header
+                            var contentDisposition = request.getResponseHeader('Content-Disposition');
+                            var filename = contentDisposition.match(/filename="(.+?)"/)[1];
+
+                            // Create a temporary URL for the blob data
+                            var blobUrl = window.URL.createObjectURL(data);
+
+                            // Create an anchor element to trigger the download
+                            var a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = filename; // Set the download filename
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+
+                            // Clean up the temporary URL
+                            window.URL.revokeObjectURL(blobUrl);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Failed to download the file:', error);
+                        }
+                    });
+
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function DownloadFilePendukung(id) {
+        var url = "";
+        url = '../NoticeOfDisbursement/DownloadFilePendukung';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: { 'id': id },
+                        xhrFields: {
+                            responseType: 'blob' // Set the response type to blob
+                        },
+                        success: function (data, textStatus, request) {
+
+                            // Extract the filename from the Content-Disposition header
+                            var contentDisposition = request.getResponseHeader('Content-Disposition');
+                            var filename = contentDisposition.match(/filename="(.+?)"/)[1];
+
+                            // Create a temporary URL for the blob data
+                            var blobUrl = window.URL.createObjectURL(data);
+
+                            // Create an anchor element to trigger the download
+                            var a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = filename; // Set the download filename
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+
+                            // Clean up the temporary URL
+                            window.URL.revokeObjectURL(blobUrl);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Failed to download the file:', error);
+                        }
+                    });
+
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+
+    function RandomStringView(length) {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < length) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            counter += 1;
+        }
+        return result;
+    }
+</script>

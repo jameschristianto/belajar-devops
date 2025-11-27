@@ -1,0 +1,39 @@
+﻿@model DashboardDevaBNI.ViewModels.NoticeOfDisbursement_ViewModel
+
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><span class="pr-2">Create Notice Of Disbursement</span></h5>
+            </div>
+            <div class="card-body">
+                <form id="FormDataBulk">
+                    @Html.AntiForgeryToken()
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="col-form-label">File NOD<span class="labelMandatory">*</span></label>
+                            <div class="row">
+                                <div class="col-12">
+                                    <input type="file" class="form-control dropify" id="File" data-allowed-file-extensions='["xlsx", "xls"]'>
+                                </div>
+                            </div>
+                            <span class="text-muted">Download template file NOD. <a href="~/nod_file/Template_Nod.xlsx">Download</a> </span>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="col-sm-12 ml-sm-auto">
+                            <button class="btn btn-primary" type="button" id="SubmitBulk">
+                                <i class="fa fa-md fa-upload"></i>
+                                Upload
+                            </button>
+                            <button class="btn btn-danger" type="button" id="Back">
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,283 @@
+﻿@using DashboardDevaBNI.Component;
+@using DashboardDevaBNI.ViewModels;
+@using Microsoft.AspNetCore.Http;
+
+@{
+    var AllMenu = (List<Navigation_ViewModels>)Context.Session.GetObject<List<Navigation_ViewModels>>("AllMenu");
+    var Path = ".." + ViewBag.CurrentPath;
+    var User_Id = Context.Session.GetString(SessionConstan.Session_User_Id);
+    var Username_Pegawai = Context.Session.GetString(SessionConstan.Session_Username_Pegawai);
+    var Pegawai_Id = Context.Session.GetString(SessionConstan.Session_Pegawai_Id);
+    var Nama_Pegawai = Context.Session.GetString(SessionConstan.Session_Nama_Pegawai);
+    var Role_Id = Context.Session.GetString(SessionConstan.Session_Role_Id);
+    var Nama_Role = Context.Session.GetString(SessionConstan.Session_Nama_Role);
+}
+
+<style>
+    .brand-image2 {
+        float: left;
+        line-height: -0.2;
+        margin-left: -1.9rem;
+        margin-right: -1.5rem;
+        margin-top: -46px;
+        max-height: 124px;
+        width: auto;
+        padding: 20px;
+    }
+</style>
+
+<!-- Brand Logo -->
+<a href="../Home/Index" class="brand-link">
+    <img src="~/lib/images/djpicon.png" alt="Kemenkes Logo" class="brand-image" />
+    <span class="brand-text font-weight-light"><b>DEVA</b></span>
+</a>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <!-- Sidebar user panel (optional) -->
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+
+        <a href="@Url.Action("Index", "Profile")" class="image button">
+            <img src="~/lib/images/profileLogo.jpg" class="img-circle elevation-2" alt="User Image"/>
+        </a>
+        <div class="info">
+            <a href="@Url.Action("Index","Profile")" class="d-block">@Username_Pegawai</a>
+            <a href="@Url.Action("Index","Profile")" class="d-block">@Nama_Role</a>
+        </div>
+    </div>
+
+    <!-- Sidebar Menu -->
+    <nav class="mt-2" id="sideBarMenu">
+        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+            <li class="nav-header">Menu</li>
+
+            @if (AllMenu != null)
+            {
+                @foreach (var Level1 in AllMenu.Where(s => s.Type == 1).OrderBy(omn => omn.Orderby).ToList())
+                {
+                    @if ((Level1.Route == Path))
+                    {
+                        <li class="nav-item menu-is-opening menu-open">
+                            <a href="@Level1.Route" class="nav-link active">
+                                <i class="nav-icon @(Level1.Icon)"></i>
+                                <p>
+                                    @Level1.Name
+                                    @if (AllMenu.Where(s => s.Type == 2 && s.ParentNavigationId == Level1.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                    {
+                                        <i class="right fas fa-angle-left"></i>
+                                    }
+                                </p>
+                            </a>
+
+                            @if (AllMenu.Where(s => s.Type == 2 && s.ParentNavigationId == Level1.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                            {
+                                <ul class="nav nav-treeview">
+                                    @foreach (var Level2 in AllMenu.Where(s => s.Type == 2 && s.ParentNavigationId == Level1.Id).OrderBy(omn => omn.Orderby).ToList())
+                                    {
+                                        @if (Level2.Route == Path)
+                                        {
+                                            <li class="nav-item menu-is-opening menu-open">
+                                                <a href="@Level2.Route" class="nav-link active">
+                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <p>
+                                                        @Level2.Name
+                                                        @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                                        {
+                                                            <i class="right fas fa-angle-left"></i>
+                                                        }
+                                                    </p>
+                                                </a>
+                                                @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                                {
+                                                    <ul class="nav nav-treeview">
+                                                        @foreach (var Level3 in AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).OrderBy(omn => omn.Orderby).ToList())
+                                                        {
+                                                            <li class="nav-item">
+                                                                <a href="@Level3.Route" class="nav-link">
+                                                                    <i class="far fa-dot-circle nav-icon"></i>
+                                                                    <p>@Level3.Name</p>
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="nav-item">
+                                                <a href="@Level2.Route" class="nav-link">
+                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <p>
+                                                        @Level2.Name
+                                                        @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                                        {
+                                                            <i class="right fas fa-angle-left"></i>
+                                                        }
+                                                    </p>
+                                                </a>
+                                                @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                                {
+                                                    <ul class="nav nav-treeview">
+                                                        @foreach (var Level3 in AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).OrderBy(omn => omn.Orderby).ToList())
+                                                        {
+                                                            <li class="nav-item">
+                                                                <a href="@Level3.Route" class="nav-link">
+                                                                    <i class="far fa-dot-circle nav-icon"></i>
+                                                                    <p>@Level3.Name</p>
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </li>
+
+                                        }
+                                    }
+                                </ul>
+                            }
+                        </li>
+                    }
+                    else if ((Level1.Route == "#" && AllMenu.Where(s => s.Type == 2 && s.Route == Path && s.ParentNavigationId == Level1.Id).Select(m => m.Route).FirstOrDefault() == Path))
+                    {
+                        <li class="nav-item menu-is-opening menu-open">
+                            <a href="@Level1.Route" class="nav-link active">
+                                <i class="nav-icon @(Level1.Icon)"></i>
+                                <p>
+                                    @Level1.Name
+                                    @if (AllMenu.Where(s => s.Type == 2 && s.ParentNavigationId == Level1.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                    {
+                                        <i class="right fas fa-angle-left"></i>
+                                    }
+                                </p>
+                            </a>
+
+                            @if (AllMenu.Where(s => s.Type == 2 && s.ParentNavigationId == Level1.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                            {
+                                <ul class="nav nav-treeview">
+                                    @foreach (var Level2 in AllMenu.Where(s => s.Type == 2 && s.ParentNavigationId == Level1.Id).OrderBy(omn => omn.Orderby).ToList())
+                                    {
+                                        @if (Level2.Route == Path)
+                                        {
+                                            <li class="nav-item menu-is-opening menu-open">
+                                                <a href="@Level2.Route" class="nav-link active">
+                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <p>
+                                                        @Level2.Name
+                                                        @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                                        {
+                                                            <i class="right fas fa-angle-left"></i>
+                                                        }
+                                                    </p>
+                                                </a>
+                                                @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                                {
+                                                    <ul class="nav nav-treeview">
+                                                        @foreach (var Level3 in AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).OrderBy(omn => omn.Orderby).ToList())
+                                                        {
+                                                            <li class="nav-item">
+                                                                <a href="@Level3.Route" class="nav-link">
+                                                                    <i class="far fa-dot-circle nav-icon"></i>
+                                                                    <p>@Level3.Name</p>
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </li>
+                                        }
+                                        else
+                                        {
+                                            <li class="nav-item">
+                                                <a href="@Level2.Route" class="nav-link">
+                                                    <i class="far fa-circle nav-icon"></i>
+                                                    <p>
+                                                        @Level2.Name
+                                                        @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                                        {
+                                                            <i class="right fas fa-angle-left"></i>
+                                                        }
+                                                    </p>
+                                                </a>
+                                                @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                                {
+                                                    <ul class="nav nav-treeview">
+                                                        @foreach (var Level3 in AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).OrderBy(omn => omn.Orderby).ToList())
+                                                        {
+                                                            <li class="nav-item">
+                                                                <a href="@Level3.Route" class="nav-link">
+                                                                    <i class="far fa-dot-circle nav-icon"></i>
+                                                                    <p>@Level3.Name</p>
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                            </li>
+
+                                        }
+                                    }
+                                </ul>
+                            }
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a href="@Level1.Route" class="nav-link">
+                                <i class="nav-icon @(Level1.Icon)"></i>
+                                <p>
+                                    @Level1.Name
+                                    @if (AllMenu.Where(s => s.Type == 2 && s.ParentNavigationId == Level1.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                    {
+                                        <i class="right fas fa-angle-left"></i>
+                                    }
+                                </p>
+                            </a>
+
+                            @if (AllMenu.Where(s => s.Type == 2 && s.ParentNavigationId == Level1.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                            {
+                                <ul class="nav nav-treeview">
+                                    @foreach (var Level2 in AllMenu.Where(s => s.Type == 2 && s.ParentNavigationId == Level1.Id).OrderBy(omn => omn.Orderby).ToList())
+                                    {
+                                        <li class="nav-item">
+                                            <a href="@Level2.Route" class="nav-link">
+                                                <i class="far fa-circle nav-icon"></i>
+                                                <p>
+                                                    @Level2.Name
+                                                    @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                                    {
+                                                        <i class="right fas fa-angle-left"></i>
+                                                    }
+                                                </p>
+                                            </a>
+                                            @if (AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).Select(m => m.ParentNavigationId).FirstOrDefault() != null)
+                                            {
+                                                <ul class="nav nav-treeview">
+                                                    @foreach (var Level3 in AllMenu.Where(s => s.Type == 3 && s.ParentNavigationId == Level2.Id).OrderBy(omn => omn.Orderby).ToList())
+                                                    {
+                                                        <li class="nav-item">
+                                                            <a href="@Level3.Route" class="nav-link">
+                                                                <i class="far fa-dot-circle nav-icon"></i>
+                                                                <p>@Level3.Name</p>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </li>
+
+                    }
+                }
+            }
+
+
+        </ul>
+    </nav>
+    <!-- /.sidebar-menu -->
+</div>
+<!-- /.sidebar -->

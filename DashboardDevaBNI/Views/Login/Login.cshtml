@@ -1,0 +1,519 @@
+﻿@model DashboardDevaBNI.ViewModels.SliderLogin_ViewModel
+@using DashboardDevaBNI.Component;
+@using Microsoft.AspNetCore.Http;﻿
+
+@{
+    Layout = null;
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - Portal Deva</title>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="~/Login/fonts/icomoon/style.css">
+    <!-- Carousel -->
+    <link href="~/lib/OwlCarousel/dist/assets/owl.carousel.min.css" rel="stylesheet" />
+    <link href="~/lib/OwlCarousel/dist/assets/owl.theme.default.min.css" rel="stylesheet" />
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/Login/css/bootstrap.min.css">
+    <!-- Toastr -->
+    <link href="~/lib/adminlte-master/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <link href="~/lib/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet" />
+    <!-- Style -->
+    <link rel="stylesheet" href="~/Login/css/style.css">
+
+</head>
+<body>
+
+
+    <div class="d-lg-flex half" style="height: 100vh">
+        <div class="bg order-1 order-md-2">
+            @* <div class="owl-carousel owl-theme" style="width: -webkit-fill-available !important; height: -webkit-fill-available !important">
+            <div class="item"><img src="~/login/images/image3.png" style="width: -webkit-fill-available; height: -webkit-fill-available" /></div>
+            <div class="item"><img src="~/login/images/image3.png" style="width: -webkit-fill-available; height: -webkit-fill-available" /></div>
+            </div> *@
+            @*  <div class="bg order-1 order-md-2 owl-carousel owl-theme">
+            <div class="item"><img src="/Login/images/bg_1.jpg" /></div>
+            </div> *@
+            <img src="~/Login/images/image3.png" style="width: -webkit-fill-available; height: -webkit-fill-available" />
+        </div>
+        @* <div class="bg order-1 order-md-2" style="background-image: url('lib\\images\\Banner2.svg');"></div> *@
+
+        <div class="order-2 order-md-1">
+            <div class="container">
+                <div class="row mt-2" style="height: auto">
+                    <div class="col-6">
+                        <img src="~/Login/images/image1.png" style="width: 80%; float: left" />
+                    </div>
+                    <div class="col-6">
+                        <img src="~/Login/images/image2.png" style="width: 50%; float: right" />
+                    </div>
+                </div>
+                <div class="row align-items-center justify-content-center" style="height: auto; margin-top: 10%">
+                    <div class="col-md-7">
+                        <div class="mb-4">
+                            <h3>Sign In</h3>
+                            <p class="mb-4">Please login to continue to your account.</p>
+                        </div>
+                        @using (Html.BeginForm("Login", "Login", FormMethod.Post, new { @id = "form", role = "form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <div class="form-group first">
+                                <label for="username">Username</label>
+                                @Html.TextBox("Username", "", new { @class = "form-control", @value = "", @autocomplete = "webauthn" })
+
+                            </div>
+                            <div class="form-group last mb-3">
+                                <label for="password">Password</label>
+                                @Html.TextBox("Password", "", new { @class = "form-control", @type = "password", @value = "", @autocomplete = "off", @id = "pass" })
+
+                            </div>
+                            @Html.TextBox("OtpValid", "", new { @class = "form-control", @value = "", @autocomplete = "webauthn", @hidden = true })
+
+                            <div class="d-flex mb-5 align-items-center">
+                                <label class="control--checkbox mb-0">
+                                    <span><a href="javascript:void(0)" onclick="LogoutFromAny()" class="forgot-pass">Logout Account From Another Device</a></span>
+                                </label>
+
+                                <span class="ml-auto"><a href="javascript:void(0)" onclick="ForgetPassword()" class="forgot-pass">Forgot Password</a></span>
+                            </div>
+
+                            <input type="submit" value="Log In" class="btn btn-block btn-primary">
+
+                            <div class="row mt-3">
+                                <div class="col-12">
+                                    <div class="w3layouts_more-buttn" style="margin: auto">
+                                        <h3 class="text-center" style="color:red; font-size: 18px">
+                                            @ViewBag.ErrorMessage
+                                        </h3>
+                                        <h3 class="text-center" style="color:green; font-size: 18px">
+                                            @ViewBag.SuccessMessage
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/adminlte-master/plugins/jquery/jquery.min.js"></script>
+    <script src="~/Login/js/popper.min.js"></script>
+    <script src="~/lib/OwlCarousel/dist/owl.carousel.min.js"></script>
+    <script src="~/Login/js/bootstrap.min.js"></script>
+    <script src="~/Login/js/main.js"></script>
+    <script src="~/lib/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    <script src="~/lib/adminlte-master/plugins/toastr/toastr.min.js"></script>
+
+    <script>
+        @{
+            var IsVerifEmail = @ViewBag.IsVerifEmail == "" ? "false" : @ViewBag.IsVerifEmail;
+            var IsVerifNoTelp = @ViewBag.IsVerifNoTelp == "" ? "false" : @ViewBag.IsVerifNoTelp;
+            var Validation = @ViewBag.Validation == "" ? "" : @ViewBag.Validation;
+        }
+
+
+            var IsVerifEmail = "@IsVerifEmail"
+        var IsVerifNoTelp = "@IsVerifNoTelp"
+        var Validation = "@Validation"
+
+        var countdownInterval;
+        var Kode = ""
+        var Validate = ""
+        var ErrorMessage = "";
+        var Username = "";
+        var ShowOTPEmail = "";
+        var ShowOTPWa = "";
+        var TypeOtp = 0;
+        var EmailorNumber = "";
+
+        $(document).ready(function () {
+
+            $(".eye-toggle").on('click', function () {
+                var passwordElement = document.getElementById("pass");
+                if (passwordElement.getAttribute("type") == "password") {
+                    passwordElement.setAttribute("type", "text");
+                    $(".pass-eye").removeClass("fa-eye-slash");
+                    $(".pass-eye").addClass("fa-eye");
+                } else {
+                    passwordElement.setAttribute("type", "password");
+                    $(".pass-eye").removeClass("fa-eye");
+                    $(".pass-eye").addClass("fa-eye-slash");
+                }
+            });
+
+
+            if (Kode == "2") {
+                swal({
+                    title: "Konfirmasi",
+                    text: "Apakah Anda yakin ingin melakukan forget password?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                }).then((willforget) => {
+                    if (willforget) {
+                        window.open("../Login/LupaPassword", "_Blank")
+                    }
+                });
+            }
+
+            ShowValidateOtp(IsVerifEmail, IsVerifNoTelp);
+
+        });
+
+
+
+        function ShowValidateOtp(IsEmail, IsNoTelp) {
+            if (Validation == "1") {
+                Swal.fire({
+                    title: "Pilih Metode Verifikasi?",
+                    text: "Pilih salah satu metode dibawah ini untuk mendapatkan kode OTP.",
+                    showConfirmButton: IsEmail === "true",
+                    // showDenyButton: IsNoTelp === "true",
+                    denyButtonColor: "#25d366",
+                    confirmButtonText: '<i class="fa fa-envelope"></i> Email',
+                    denyButtonText: '<i class="icon ion-social-whatsapp"></i> Whatsapp',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        TypeOtp = 1
+                        $.ajax({
+                            url: '../Login/SendEmailOTP',
+                            type: 'POST',
+                            success: function (d) {
+                                if (d.statusCode == "1" || d.statusCode == "0") {
+                                    Swal.fire({
+                                        title: 'Validasi OTP',
+                                        input: 'text',
+                                        text: 'Kode OTP telah dikirim melalui Email ke ' + d.message,
+                                        inputPlaceholder: 'Masukan OTP',
+                                        showCancelButton: true,
+                                        confirmButtonText: 'Submit',
+                                        cancelButtonText: 'Cancel',
+                                        showLoaderOnConfirm: true,
+                                        footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(1)'>Kirim Ulang</p></a>`,
+                                        preConfirm: (inputValue) => {
+                                            if (inputValue.trim() === '') {
+                                                // Show validation message for an empty string
+                                                Swal.showValidationMessage('OTP tidak boleh kosong');
+                                            }
+                                            else {
+                                                // Trigger form submission
+                                                ValidateOtp(inputValue.trim(), 1)
+                                            }
+                                        },
+                                        allowOutsideClick: false
+                                    }).then((result) => {
+
+                                    });
+                                    clearInterval(countdownInterval); // Clear the existing countdown interval
+                                    startCountdown(30, 1);
+                                }
+                                else {
+                                    Swal.fire({
+                                        icon: "error",
+                                        title: "Oops...",
+                                        text: d.message
+                                    });
+                                }
+                            }
+                        });
+                    }
+                    // else if (result.isDenied) {
+                    //     TypeOtp = 2
+                    //     $.ajax({
+                    //         url: '../Login/SendWaOTP',
+                    //         type: 'POST',
+                    //         success: function (d) {
+                    //             if (d.statusCode == "1" || d.statusCode == "0") {
+                    //                 Swal.fire({
+                    //                     title: 'Validasi OTP',
+                    //                     input: 'text',
+                    //                     text: 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.message,
+                    //                     inputPlaceholder: 'Masukan OTP',
+                    //                     showCancelButton: true,
+                    //                     confirmButtonText: 'Submit',
+                    //                     cancelButtonText: 'Cancel',
+                    //                     showLoaderOnConfirm: true,
+                    //                     footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(2)'>Kirim Ulang</p></a>`,
+                    //                     preConfirm: (inputValue) => {
+                    //                         if (inputValue.trim() === '') {
+                    //                             // Show validation message for an empty string
+                    //                             Swal.showValidationMessage('OTP tidak boleh kosong');
+                    //                         }
+                    //                         else {
+                    //                             // Trigger form submission
+                    //                             ValidateOtp(inputValue.trim(), 2)
+                    //                         }
+                    //                     },
+                    //                     allowOutsideClick: false
+                    //                 }).then((result) => {
+
+                    //                 });
+                    //                 clearInterval(countdownInterval); // Clear the existing countdown interval
+                    //                 startCountdown(30, 2);
+                    //             }
+                    //             else {
+                    //                 Swal.fire({
+                    //                     icon: "error",
+                    //                     title: "Oops...",
+                    //                     text: d.message
+                    //                 });
+                    //             }
+                    //         }
+                    //     });
+                    // }
+                });
+            }
+        }
+
+        function ValidateOtp(Otp, TypeOtp) {
+            debugger;
+            $.ajax({
+                url: '../Login/ValidateOtp',
+                type: 'POST',
+                data: { "otp": Otp, "type": TypeOtp },
+                success: function (d) {
+                    if (d.statusCode == "1") {
+                        $("#OtpValid").val('true');
+                        document.getElementById('form').submit();
+                    }
+                    else {
+                        var MessageSwal = '';
+
+                        if (TypeOtp == 1) {
+                            MessageSwal = 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp
+                        }
+                        else {
+                            MessageSwal = 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.valueGeneratorOtp
+                        }
+
+                        Swal.fire({
+                            title: 'Validasi OTP',
+                            input: 'text',
+                            inputLabel: MessageSwal,
+                            inputPlaceholder: 'Masukan OTP',
+                            showCancelButton: true,
+                            confirmButtonText: 'Submit',
+                            cancelButtonText: 'Cancel',
+                            showLoaderOnConfirm: true,
+                            footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(` + TypeOtp + `)'>Kirim Ulang</p></a>`,
+                            preConfirm: (inputValue) => {
+                                if (inputValue.trim() === '') {
+                                    // Show validation message for an empty string
+                                    Swal.showValidationMessage('OTP tidak boleh kosong');
+                                }
+                                else {
+                                    ValidateOtp(inputValue.trim(), TypeOtp)
+                                }
+                            },
+                            allowOutsideClick: false
+                        }).then((result) => {
+
+                        });
+
+                        Swal.showValidationMessage(d.message);
+
+                    }
+                }
+            });
+        }
+
+        function SendOtpAgain(TypeSendOtp) {
+            clearInterval(countdownInterval); // Clear the existing countdown interval
+            startCountdown(30, TypeSendOtp);
+            if (TypeSendOtp == 1) {
+                $.ajax({
+                    url: '../Login/SendEmailOTP',
+                    type: 'POST',
+                    success: function (d) {
+
+                    }
+                });
+            }
+            else if (TypeSendOtp == 2) {
+                $.ajax({
+                    url: '../Login/SendWaOTP',
+                    type: 'POST',
+                    success: function (d) {
+
+                    }
+                });
+            }
+
+
+        }
+
+        function startCountdown(seconds, typeOtp) {
+            var countdownElement = $('#textFooterOtp');
+            countdownElement.html("Mohon tunggu dalam <b>" + seconds + " detik</b> untuk kirim ulang");
+
+            countdownInterval = setInterval(function () {
+                seconds--;
+
+                countdownElement.html("Mohon tunggu dalam <b>" + seconds + " detik</b> untuk kirim ulang");
+
+                if (seconds === 0) {
+                    clearInterval(countdownInterval);
+                    // If the countdown reaches 0, replace the footer with the original text
+                    replaceFooterOriginalText(typeOtp);
+                }
+            }, 1000);
+        }
+
+        function replaceFooterOriginalText(typeOtp) {
+            var originalText = "Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(" + typeOtp + ", 1)'>Kirim Ulang</a>";
+            $('#textFooterOtp').html(originalText);
+        }
+
+
+
+
+        function LogoutFromAny() {
+            Swal.fire({
+                title: "Logout from other device",
+                html:
+                    '<span>Masukan Username dan Password untuk logout dari device lain</span>' +
+                    '<br/>' +
+                    '<input id="usernameLogout" class="from-control swal2-input w-75" style="border: 1px solid grey" placeholder="Username" autocomplete="webauthn" name="random1">' +
+                    '<input id="passwordLogout" type="password" class="from-control swal2-input w-75" style="border: 1px solid grey" placeholder="Password" autocomplete="webauthn" name="random2">',
+                showCancelButton: true,
+                confirmButtonText: "Logout",
+                showLoaderOnConfirm: true,
+                allowOutsideClick: false,
+                didRender: () => {
+                    document.getElementById('usernameLogout').value = '';
+                    document.getElementById('passwordLogout').value = '';
+                },
+                didOpen: () => {
+                    // Add a small delay to ensure the modal is fully displayed
+                    setTimeout(() => {
+                        document.getElementById('usernameLogout').value = '';
+                        document.getElementById('passwordLogout').value = '';
+                    }, 100); // Adjust the delay time as needed
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const username = document.getElementById('usernameLogout').value;
+                    const password = document.getElementById('passwordLogout').value;
+
+                    $.ajax({
+                        url: '../Login/LogoutFromAny',
+                        type: 'POST',
+                        data: { "username": username, "password": password },
+                        success: function (d) {
+                            if (d == "") {
+                                NotifikasiSukses("Akun berhasil di Logout");
+                            } else {
+                                NotifikasiGagal(d);
+                            }
+                        }
+                    });
+                }
+            });
+
+        }
+
+        function LogoutFromAny2() {
+            let myPromise = new Promise(function (myResolve, myReject) {
+                Swal.fire({
+                    title: "Logout from other device",
+                    html:
+                        '<span>Masukan Username dan Password untuk logout dari device lain</span>' +
+                        '<br/>' +
+                        '<input id="usernameLogout" class="from-control swal2-input w-75" style="border: 1px solid grey" placeholder="Username" autocomplete="webauthn" name="random1">' +
+                        '<input id="passwordLogout" type="password" class="from-control swal2-input w-75" style="border: 1px solid grey" placeholder="Password" autocomplete="webauthn" name="random2">',
+                    showCancelButton: true,
+                    confirmButtonText: "Logout",
+                    showLoaderOnConfirm: true,
+                    allowOutsideClick: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const username = document.getElementById('usernameLogout').value;
+                        const password = document.getElementById('passwordLogout').value;
+
+                        $.ajax({
+                            url: '../Login/LogoutFromAny',
+                            type: 'POST',
+                            data: { "username": username, "password": password },
+                            success: function (d) {
+                                if (d == "") {
+                                    NotifikasiSukses("Akun berhasil di Logout");
+                                } else {
+                                    NotifikasiGagal(d);
+                                }
+                            }
+                        });
+                    }
+                });
+
+                myResolve(); // when successful
+                myReject();  // when error
+            });
+            myPromise.then(
+                function (value) { empty(); }
+            );
+        }
+        function empty() {
+            setTimeout(() => {
+                document.getElementById('usernameLogout').value = '';
+                document.getElementById('passwordLogout').value = '';
+            }, 2000)
+        }
+
+        function ForgetPassword() {
+            Swal.fire({
+                title: "Forget Password",
+                html:
+                    '<span>Masukan Email untuk menerima link reset Password</span>' +
+                    '<br/>' +
+                    '<input id="EmailForget" class="from-control swal2-input w-75" style="border: 1px solid grey" placeholder="Email">',
+                showCancelButton: true,
+                confirmButtonText: "Submit",
+                showLoaderOnConfirm: true,
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const email = document.getElementById('EmailForget').value;
+
+                    $.ajax({
+                        url: '../Login/SendEmailForgetPassword',
+                        type: 'POST',
+                        data: { "email": email },
+                        success: function (d) {
+                            NotifikasiInfo("Mohon cek email yang telah di isi");
+
+                            // if (d == "") {
+                            // 	NotifikasiSukses("Berhasil kirim email reset password");
+                            // } else {
+                            // 	NotifikasiGagal(d);
+                            // }
+                        }
+                    });
+                }
+            });
+        }
+
+
+        function NotifikasiSukses(text) {
+            toastr.success(text)
+        }
+        function NotifikasiInfo(text) {
+            toastr.info(text)
+        }
+
+        function NotifikasiGagal(text) {
+            toastr.error(text)
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+{
+  "profiles": {
+    "DashboardDevaBNI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DEVA_ConnectionString__dbDeva": "RGF0YSBTb3VyY2U9MTkyLjE2OC4xNDIuMTUsMTQ3MDtJbml0aWFsIENhdGFsb2c9ZGJEYXNoYm9hcmREZXZhQk5JO1VzZXIgSWQ9R09WREVWQURFVjtQYXNzd29yZD1CTjE1cWxERVZBLi87Q29ubmVjdCBUaW1lb3V0PTMwO0VuY3J5cHQ9RmFsc2U7VHJ1c3RTZXJ2ZXJDZXJ0aWZpY2F0ZT1UcnVlO0FwcGxpY2F0aW9uSW50ZW50PVJlYWRXcml0ZTtNdWx0aVN1Ym5ldEZhaWxvdmVyPUZhbHNl",
+        "DEVA_ApiDeva__BaseApi": "http://192.168.152.220:45066",
+        "DEVA_Subdomain__Domain": "",
+        "DEVA_Email__EmailSMTP": "BNIDashboard@bni.co.id",
+        "DEVA_Email__PasswordSMTP": "Hgjd893%h2",
+        "DEVA_Email__SubjectSMTP": "Reset Password",
+        "DEVA_Email__ClientSMTP": "10.45.36.34",
+        "DEVA_Email__PortSMTP": "25"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:7138;http://localhost:5005"
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "environmentVariables": {
+        "ASPNETCORE_URLS": "https://+:443;http://+:80"
+      },
+      "publishAllPorts": true,
+      "useSSL": true
+    }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:61037",
+      "sslPort": 44359
+    }
+  }
+}

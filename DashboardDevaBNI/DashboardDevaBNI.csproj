@@ -1,0 +1,258 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>d75c35c7-ea63-4af7-9401-915ab595f6af</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Views\MasterOrganization\**" />
+    <Compile Remove="Views\NewFolder1\**" />
+    <Compile Remove="Views\NewFolder\**" />
+    <Compile Remove="Views\UploadNOD - Copy\**" />
+    <Content Remove="Views\MasterOrganization\**" />
+    <Content Remove="Views\NewFolder1\**" />
+    <Content Remove="Views\NewFolder\**" />
+    <Content Remove="Views\UploadNOD - Copy\**" />
+    <EmbeddedResource Remove="Views\MasterOrganization\**" />
+    <EmbeddedResource Remove="Views\NewFolder1\**" />
+    <EmbeddedResource Remove="Views\NewFolder\**" />
+    <EmbeddedResource Remove="Views\UploadNOD - Copy\**" />
+    <None Remove="Views\MasterOrganization\**" />
+    <None Remove="Views\NewFolder1\**" />
+    <None Remove="Views\NewFolder\**" />
+    <None Remove="Views\UploadNOD - Copy\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="ViewModels\NoDView_ViewModel - Copy.cs" />
+    <Compile Remove="ViewModels\NopHeaderDetail.cs" />
+    <Compile Remove="ViewModels\NoticeOfPayment.cs" />
+    <Compile Remove="ViewModels\NoticeOfPaymentDetail.cs" />
+    <Compile Remove="ViewModels\NotificationOfPayment_ViewModels.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Views\Home\Index.cshtml" />
+    <None Include="Views\Home\Privacy.cshtml" />
+    <None Include="Views\Home\_Script.cshtml" />
+    <None Include="Views\Login\Logi3n.cshtml" />
+    <None Include="Views\Login\LogoutAccount.cshtml" />
+    <None Include="Views\Login\_Script.cshtml" />
+    <None Include="Views\MasterLookup\Index.cshtml" />
+    <None Include="Views\MasterLookup\_Create.cshtml" />
+    <None Include="Views\MasterLookup\_Edit.cshtml" />
+    <None Include="Views\MasterLookup\_Script.cshtml" />
+    <None Include="Views\MasterLookup\_View.cshtml" />
+    <None Include="Views\MasterMenu\Index.cshtml" />
+    <None Include="Views\MasterMenu\_Create.cshtml" />
+    <None Include="Views\MasterMenu\_Edit.cshtml" />
+    <None Include="Views\MasterMenu\_Script.cshtml" />
+    <None Include="Views\MasterMenu\_View.cshtml" />
+    <None Include="Views\MasterRole\Index.cshtml" />
+    <None Include="Views\MasterRole\_Create.cshtml" />
+    <None Include="Views\MasterRole\_Edit.cshtml" />
+    <None Include="Views\MasterRole\_Script.cshtml" />
+    <None Include="Views\MasterRole\_View.cshtml" />
+    <None Include="Views\MasterSystemParameter\Index.cshtml" />
+    <None Include="Views\MasterSystemParameter\_Create.cshtml" />
+    <None Include="Views\MasterSystemParameter\_Edit.cshtml" />
+    <None Include="Views\MasterSystemParameter\_Script.cshtml" />
+    <None Include="Views\MasterSystemParameter\_View.cshtml" />
+    <None Include="Views\MasterUser\Index.cshtml" />
+    <None Include="Views\MasterUser\_Create.cshtml" />
+    <None Include="Views\MasterUser\_Edit.cshtml" />
+    <None Include="Views\MasterUser\_Script.cshtml" />
+    <None Include="Views\MasterUser\_View.cshtml" />
+    <None Include="Views\Shared\Error.cshtml" />
+    <None Include="Views\Shared\_Footer.cshtml" />
+    <None Include="Views\Shared\_Layout.cshtml" />
+    <None Include="Views\Shared\_ModalContent.cshtml" />
+    <None Include="Views\Shared\_Navbars.cshtml" />
+    <None Include="Views\Shared\_PartialJavaScript.cshtml" />
+    <None Include="Views\Shared\_SideBars.cshtml" />
+    <None Include="Views\Shared\_ValidationScriptsPartial.cshtml" />
+    <None Include="Views\_ViewImports.cshtml" />
+    <None Include="Views\_ViewStart.cshtml" />
+    <None Include="wwwroot\Login\css\.DS_Store" />
+    <None Include="wwwroot\Login\css\bootstrap.min.css.map" />
+    <None Include="wwwroot\Login\fonts\.DS_Store" />
+    <None Include="wwwroot\Login\fonts\icomoon\demo-files\demo.js" />
+    <None Include="wwwroot\Login\fonts\icomoon\fonts\icomoon.svg" />
+    <None Include="wwwroot\Login\images\.DS_Store" />
+    <None Include="wwwroot\Login\js\bootstrap.min.js" />
+    <None Include="wwwroot\Login\js\main.js" />
+    <None Include="wwwroot\Login\js\owl.carousel.min.js" />
+    <None Include="wwwroot\Login\js\popper.min.js" />
+    <None Include="wwwroot\Login\scss\.DS_Store" />
+    <None Include="wwwroot\Login\scss\bootstrap\bootstrap-grid.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\bootstrap-reboot.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\bootstrap.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_alert.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_background-variant.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_badge.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_border-radius.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_box-shadow.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_breakpoints.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_buttons.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_caret.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_clearfix.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_deprecate.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_float.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_forms.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_gradients.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_grid-framework.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_grid.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_hover.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_image.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_list-group.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_lists.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_nav-divider.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_pagination.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_reset-text.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_resize.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_screen-reader.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_size.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_table-row.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_text-emphasis.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_text-hide.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_text-truncate.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_transition.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\mixins\_visibility.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_align.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_background.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_borders.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_clearfix.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_display.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_embed.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_flex.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_float.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_overflow.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_position.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_screenreaders.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_shadows.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_sizing.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_spacing.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_stretched-link.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_text.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\utilities\_visibility.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\vendor\_rfs.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_alert.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_badge.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_breadcrumb.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_button-group.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_buttons.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_card.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_carousel.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_close.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_code.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_custom-forms.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_dropdown.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_forms.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_functions.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_grid.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_images.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_input-group.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_jumbotron.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_list-group.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_media.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_mixins.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_modal.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_nav.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_navbar.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_pagination.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_popover.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_print.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_progress.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_reboot.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_root.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_spinners.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_tables.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_toasts.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_tooltip.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_transitions.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_type.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_utilities.scss" />
+    <None Include="wwwroot\Login\scss\bootstrap\_variables.scss" />
+    <None Include="wwwroot\Login\scss\style.scss" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.20" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.308" />
+	  <PackageReference Include="itext" Version="8.0.3" />
+	  <PackageReference Include="itext.bouncy-castle-adapter" Version="8.0.3" />
+	  <PackageReference Include="Select.HtmlToPdf.NetCore" Version="23.2.0" />
+	  <PackageReference Include="DinkToPdf" Version="1.0.8" />
+	  <PackageReference Include="RazorLight" Version="2.3.1" />
+    <PackageReference Include="RazorEngine" Version="3.10.0" />
+    <PackageReference Include="ExcelDataReader" Version="3.6.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.16" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.16">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.16" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.16" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.16">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.6" />
+    <PackageReference Include="Minio" Version="6.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Novell.Directory.Ldap.NETStandard" Version="3.6.0" />
+    <PackageReference Include="NPOI" Version="2.7.0" />
+    <PackageReference Include="Serilog" Version="4.0.2" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.2" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+	  <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="4.1.1" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.10.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.10.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.10.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.10.0-beta.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.10.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Process" Version="1.10.0-beta.1" />
+    <PackageReference Include="System.DirectoryServices" Version="6.0.1" />
+    <PackageReference Include="UAParser" Version="3.1.47" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\nod_file\" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="libwkhtmltox.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="libwkhtmltox.dylib">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
+	</ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="libwkhtmltox.so">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Views\NoticeOfDisbursement\_PdfExportNoD.cshtml">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</EmbeddedResource>
+	</ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Views\NoticeOfPayment\_PdfExportNoP.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

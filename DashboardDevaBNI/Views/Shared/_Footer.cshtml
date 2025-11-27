@@ -1,0 +1,32 @@
+﻿@model DashboardDevaBNI.ViewModels.SliderLogin_ViewModel
+@using DashboardDevaBNI.Component;
+@using Microsoft.AspNetCore.Http;﻿
+@{
+	var SubDomain = GetConfig.AppSetting["Subdomain:Domain"];
+}
+<style>
+	#ContainerPengumuman {
+		overflow: hidden;
+	}
+
+	#Pengumuman {
+		white-space: nowrap;
+		font-size: 16px;
+		position: relative;
+		display: inline-block;
+		left: 100%; /* Start offscreen to the right */
+	}
+</style>
+
+@*<div id="ContainerPengumuman">
+	<div id="Pengumuman">@ViewBag.Pengumuman</div>
+</div>*@
+
+<strong>Copyright &copy; 2023 Bank BNI.</strong>
+            All rights reserved.
+<div class="float-right d-none d-sm-inline-block">
+    <b>Version</b> 1.0.0
+</div>
+
+
+<script src="@SubDomain/lib/adminlte-master/plugins/jquery/jquery.min.js"></script>

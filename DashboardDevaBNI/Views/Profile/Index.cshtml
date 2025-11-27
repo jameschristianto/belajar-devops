@@ -1,0 +1,238 @@
+﻿@{
+    ViewData["Title"] = "Pengaturan Profil";
+}
+
+@section Styles {
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="~/lib/adminlte-master/plugins/fontawesome-free/css/all.min.css">
+    <!-- Toastr -->
+    <link href="~/lib/adminlte-master/plugins/toastr/toastr.min.css" rel="stylesheet">
+    <!--DatePickerRange-->
+    <link rel="stylesheet" href="~/lib/adminlte-master/plugins/daterangepicker/daterangepicker.css">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="~/lib/adminlte-master/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="~/lib/adminlte-master/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+    <!-- Ionicon -->
+    <link href="~/lib/adminlte-master/plugins/ionicons/css/ionicons.css" rel="stylesheet" />
+    <!-- SweetAlert2 -->
+    <link href="~/lib/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet" />
+
+}
+
+@section Scripts {
+
+    <!-- Select2 -->
+    <script src="~/lib/adminlte-master/plugins/select2/js/select2.full.min.js"></script>
+    <!--CanvasJS-->
+    <script src="~/lib/canvasjs-chart/canvasjs.min.js"></script>
+    <!-- Toastr -->
+    <script src="~/lib/adminlte-master/plugins/toastr/toastr.min.js"></script>
+    <!-- Sweetalert -->
+    <script src="~/lib/bootstrap-sweetalert/sweetalert.min.js"></script>
+    <!-- Sweetalert2 -->
+    <script src="~/lib/sweetalert2/dist/sweetalert2.all.min.js"></script>
+    
+    
+    @Html.Partial("_Script")
+}
+<style>
+    .small-box {
+        height: 90%;
+    }
+
+    .stripe {
+        border: 1px solid white;
+        height: 20%;
+        background-color: #babbbc;
+    }
+
+    .small-stripe {
+        width: 40%;
+    }
+
+    .medium-stripe {
+        width: 70%;
+    }
+
+    .long-stripe {
+        width: 100%;
+    }
+
+    .containering.loading .img, .containering.loading .stripe {
+        animation: hintloading 2s ease-in-out 0s infinite reverse;
+        -webkit-animation: hintloading 2s ease-in-out 0s infinite reverse;
+    }
+
+    #profilePic {
+        width: 250px;
+        height: 250px;
+        object-fit: fill;
+    }
+
+    button.ubah {
+        background: none;
+        border: none;
+    }
+
+    .name > b {
+        display: inline-block;
+        min-width: 200px;
+    }
+
+    .text-left {
+        text-align: left !important;
+        font-size: 20px;
+    }
+
+    .custom-form input {
+        padding: 10px; /* Adjust the padding value as needed */
+    }
+
+    .password-container {
+        position: relative;
+    }
+
+    .toggle-password {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+        background: url('eye-icon.png') no-repeat;
+        background-size: cover;
+    }
+
+        .toggle-password.visible {
+            background: url('eye-icon-visible.png') no-repeat;
+            background-size: cover;
+        }
+
+    .swal2-input-label {
+        text-align: center;
+    }
+
+    .text-danger {
+        font-size: 12px;
+    }
+
+    .blink_me {
+        animation: blinker 2s linear infinite;
+        color: red;
+    }
+
+    @@keyframes blinker {
+        50% {
+            opacity: 0;
+        }
+    }
+
+    @@keyframes hintloading {
+        0% {
+            opacity: 0.5;
+        }
+
+        50% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0.5;
+        }
+    }
+
+    @@-webkit-keyframes hintloading {
+        0% {
+            opacity: 0.5;
+        }
+
+        50% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0.5;
+        }
+    }
+
+</style>
+
+<div id="DivContentBody">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Pengaturan Profil</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Pengaturan Profil</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <section>
+                <div class="col-md-12">
+                    <div class="card card-widget">
+                        <div class="card-body">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-3 p-3">
+                                        <div class="image">
+                                            <img src="~/lib/images/profileLogo.jpg" class="img-circle img-fluid elevation-2" alt="User Image" id="profilePic" />
+                                        </div>
+                                    </div>
+                                    <div class="col-9">
+                                        <div class="row pb-1">
+                                            <b>Ubah Profil</b>
+                                        </div>
+                                        <div class="col-12 pb-2">
+                                            <div class="name"><b>Username</b>:<span class="ml-2" id="username"></span></div>
+                                        </div>
+                                        <div class="col-12 pb-2">
+                                            <div class="name"><b>Full Name</b>:<span class="ml-2" id="fullname"></span></div>
+                                        </div>
+                                        <div class="col-12 pb-2">
+                                            <div class="name"><b>Role</b>:<span class="ml-2" id="role"></span></div>
+                                        </div>
+                                        <div class="col-12 pb-2">
+                                            <div class="name"><b>Email</b>:<span class="ml-2" id="email"></span><span id="verifiedemail" class="ml-2 fas fa-check-circle text-primary"></span><span href="#" class="btn btn-info ml-2" id="ubahEmail" onclick="ChangeEmail()">Ubah</span><button href="#" class="btn btn-info ml-2" id="verifikasiEmail" onclick="Verification(1)">Verifikasi</button><h6 class="text-danger pt-2" id="warningEmail">Silahkan klik button verifikasi untuk memverifikasi alamat email Anda</h6></div>
+                                        </div>
+                                        <div class="col-12 pb-2">
+                                            <div class="name">
+                                                <b>No Whatsapp</b>:<span class="ml-2" id="noWa"></span>
+                                                <span id="verifiedwa" class="ml-2 fas fa-check-circle text-primary"></span>
+                                                @* <span href="#" class="btn btn-info ml-2" id="ubahNomor" onclick="ChangeWhatsapp()">Ubah</span>
+                                                <button href="#" class="btn btn-info ml-2" id="verifikasiWa" onclick="Verification(2)">Verifikasi</button>
+                                                <h6 class="text-danger pt-2" id="warningNoWa">Silahkan klik button verifikasi untuk memverifikasi nomor Whatsapp Anda</h6> *@
+                                            </div>
+                                        </div>
+                                        <div class="col-12 pb-2">
+                                            <div class="name"><b>Password</b>:<span class="ml-2" id="">&#8226; &#8226; &#8226; &#8226; &#8226;</span><button href="#" class="btn btn-info ml-2" id="" onclick="ChangePassword()">Ubah</button></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <h6 class="blink_me danger text-center mt-4"><strong>Untuk melanjutkan ke proses halaman dashboard silahkan verifikasi Email dan No Whatsapp terlebih dahulu.</strong></h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+</div>
+
+
+
+

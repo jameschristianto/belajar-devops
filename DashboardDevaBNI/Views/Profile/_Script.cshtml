@@ -1,0 +1,1217 @@
+﻿
+<script>
+	var countdownInterval;
+
+	var VerifEmail;
+	var VerifWA;
+
+	$(document).ready(function () {
+		DetailProfile();
+	});
+
+	function DetailProfile() {
+		$.ajax({
+			type: 'GET',
+			url: '../Login/CekSession',
+			success: function (hasil) {
+				if (hasil == true) {
+					$.ajax({
+						url: '../Profile/DataProfile',
+						type: 'POST',
+						success: function (d) {
+							console.log(d)
+							if (d.statusCode == "1") {
+								VerifEmail = d.data.isVerifEmail
+								VerifWA = d.data.isVerifNoTelp
+
+								$("#username").text(d.data.username)
+								$("#fullname").text(d.data.name)
+								$("#role").text(d.data.roleName)
+								$("#email").text(d.data.email)
+								$("#noWa").text(d.data.noHp)
+
+								if (d.data.isVerifEmail) {
+									$("#warningEmail").hide()
+									$("#verifikasiEmail").hide()
+									$(".blink_me").hide()
+									$("#verifiedemail").show()
+								}
+								else {
+									$("#warningEmail").show()
+									$("#verifikasiEmail").show()
+									$(".blink_me").show()
+									$("#verifiedemail").hide()
+								}
+
+								if (d.data.isVerifNoTelp) {
+									$("#warningNoWa").hide()
+									$("#verifikasiWa").hide()
+									$(".blink_me").hide()
+									$("#verifiedwa").show()
+								}
+								else {
+									$("#warningNoWa").show()
+									$("#verifikasiWa").show()
+									$(".blink_me").show()
+									$("#verifiedwa").hide()
+								}
+							}
+						}
+					});
+				}
+				else {
+					window.location.href = "../Login/Login?a=true";
+				}
+			}
+		});
+	}
+
+	function ChangeEmail() {
+		if (VerifEmail == true) {
+			Swal.fire({
+				title: "Pilih Metode Verifikasi?",
+				text: "Pilih salah satu metode dibawah ini untuk mendapatkan kode OTP.",
+				showConfirmButton: true,
+				confirmButtonText: '<i class="fa fa-envelope"></i> Email',
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						url: '../Login/SendEmailOTP',
+						type: 'POST',
+						success: function (d) {
+							if (d.statusCode == "1") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(1)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 1, "Email")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 1);
+							}
+							else if (d.statusCode == "0") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(1)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 1, "Email")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 1);
+								Swal.showValidationMessage(d.message);
+							}
+							else {
+								Swal.fire({
+									icon: "error",
+									title: "Oops...",
+									text: d.message
+								});
+							}
+						}
+					});
+				}
+			});
+		}
+		else {
+			Swal.fire({
+				title: "Ubah Email",
+				input: 'password',
+				text: 'Masukan Password untuk melanjutkan',
+				inputPlaceholder: 'Masukan Password',
+				showCancelButton: true,
+				confirmButtonText: "Submit",
+				showLoaderOnConfirm: true,
+				allowOutsideClick: false,
+				preConfirm: (inputValue) => {
+					if (inputValue.trim() === '') {
+						Swal.showValidationMessage('Password tidak boleh kosong');
+					}
+					else {
+						ValidatePassword(inputValue.trim(), 1)
+					}
+				}
+			}).then((result) => {
+
+			});
+		}
+	}
+	function ChangeWhatsapp() {
+		if (VerifWA == true || VerifEmail == true) {
+			Swal.fire({
+				title: "Pilih Metode Verifikasi?",
+				text: "Pilih salah satu metode dibawah ini untuk mendapatkan kode OTP.",
+				showConfirmButton: VerifEmail === true,
+				showDenyButton: VerifWA === true,
+				denyButtonColor: "#25d366",
+				confirmButtonText: '<i class="fa fa-envelope"></i> Email',
+				denyButtonText: '<i class="icon ion-social-whatsapp"></i> Whatsapp',
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						url: '../Login/SendEmailOTP',
+						type: 'POST',
+						success: function (d) {
+							if (d.statusCode == "1") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(1)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 1, "Whatsapp")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 1);
+							}
+							else if (d.statusCode == "0") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(1)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 1, "Whatsapp")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 1);
+								Swal.showValidationMessage(d.message);
+							}
+							else {
+								Swal.fire({
+									icon: "error",
+									title: "Oops...",
+									text: d.message
+								});
+							}
+						}
+					});
+				}
+				else if (result.isDenied) {
+					$.ajax({
+						url: '../Login/SendWaOTP',
+						type: 'POST',
+						success: function (d) {
+							if (d.statusCode == "1") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(2)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 2, "Whatsapp")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 2);
+							}
+							else if (d.statusCode == "0") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(2)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 2, "Whatsapp")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 2);
+								Swal.showValidationMessage(d.message);
+							}
+							else {
+								Swal.fire({
+									icon: "error",
+									title: "Oops...",
+									text: d.message
+								});
+							}
+						}
+					});
+
+				}
+			});
+		}
+		else {
+			Swal.fire({
+				title: "Ubah Whatsapp",
+				input: 'password',
+				text: 'Masukan Password untuk melanjutkan',
+				inputPlaceholder: 'Masukan Password',
+				showCancelButton: true,
+				confirmButtonText: "Submit",
+				showLoaderOnConfirm: true,
+				allowOutsideClick: false,
+				preConfirm: (inputValue) => {
+					if (inputValue.trim() === '') {
+						Swal.showValidationMessage('Password tidak boleh kosong');
+					}
+					else {
+						ValidatePassword(inputValue.trim(), 2)
+					}
+				}
+			}).then((result) => {
+
+			});
+		}
+	}
+	function ChangePassword() {
+		if (VerifWA == true || VerifEmail == true) {
+			Swal.fire({
+				title: "Pilih Metode Verifikasi?",
+				text: "Pilih salah satu metode dibawah ini untuk mendapatkan kode OTP.",
+				showConfirmButton: VerifEmail === true,
+				showDenyButton: VerifWA === true,
+				denyButtonColor: "#25d366",
+				confirmButtonText: '<i class="fa fa-envelope"></i> Email',
+				denyButtonText: '<i class="icon ion-social-whatsapp"></i> Whatsapp',
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						url: '../Login/SendEmailOTP',
+						type: 'POST',
+						success: function (d) {
+							if (d.statusCode == "1") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(1)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 1, "Password")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 1);
+							}
+							else if (d.statusCode == "0") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(1)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 1, "Password")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 1);
+								Swal.showValidationMessage(d.message);
+							}
+
+							else {
+								Swal.fire({
+									icon: "error",
+									title: "Oops...",
+									text: d.message
+								});
+							}
+						}
+					});
+				}
+				else if (result.isDenied) {
+					$.ajax({
+						url: '../Login/SendWaOTP',
+						type: 'POST',
+						success: function (d) {
+							if (d.statusCode == "1") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(2)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 2, "Password")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 2);
+							}
+							else if (d.statusCode == "0") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(2)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 2, "Password")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 2);
+								Swal.showValidationMessage(d.message);
+							}
+							else {
+								Swal.fire({
+									icon: "error",
+									title: "Oops...",
+									text: d.message
+								});
+							}
+						}
+					});
+
+				}
+			});
+		}
+		else {
+			Swal.fire({
+				title: "Ubah Password",
+				input: 'password',
+				text: 'Masukan Password untuk melanjutkan',
+				inputPlaceholder: 'Masukan Password',
+				showCancelButton: true,
+				confirmButtonText: "Submit",
+				showLoaderOnConfirm: true,
+				allowOutsideClick: false,
+				preConfirm: (inputValue) => {
+					if (inputValue.trim() === '') {
+						Swal.showValidationMessage('Password tidak boleh kosong');
+					}
+					else {
+						ValidatePassword(inputValue.trim(), 3)
+					}
+				}
+			}).then((result) => {
+
+			});
+		}
+	}
+
+	function Verification(TypeVerif) {
+		if (TypeVerif == 1) {
+			Swal.fire({
+				title: "Pilih Metode Verifikasi?",
+				text: "Pilih salah satu metode dibawah ini untuk mendapatkan kode OTP.",
+				showConfirmButton: true,
+				confirmButtonText: '<i class="fa fa-envelope"></i> Email',
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						url: '../Login/SendEmailOTP',
+						type: 'POST',
+						success: function (d) {
+							if (d.statusCode == "1") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(1)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 1, "VerifEmail")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 1);
+							}
+							else if (d.statusCode == "0") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(1)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 2, "VerifEmail")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 1);
+								Swal.showValidationMessage(d.message);
+							}
+							else {
+								Swal.fire({
+									icon: "error",
+									title: "Oops...",
+									text: d.message
+								});
+							}
+						}
+					});
+				}
+			});
+		}
+		else if (TypeVerif == 2) {
+			Swal.fire({
+				title: "Pilih Metode Verifikasi?",
+				text: "Pilih salah satu metode dibawah ini untuk mendapatkan kode OTP.",
+				showConfirmButton: true,
+				confirmButtonText: '<i class="icon ion-social-whatsapp"></i> Whatsapp',
+				confirmButtonColor: "#25d366",
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						url: '../Login/SendWaOTP',
+						type: 'POST',
+						success: function (d) {
+							if (d.statusCode == "1") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(2)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 2, "VerifWhatsapp")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 2);
+							}
+							else if (d.statusCode == "0") {
+								Swal.fire({
+									title: 'Validasi OTP',
+									input: 'text',
+									text: 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.valueGeneratorOtp,
+									inputPlaceholder: 'Masukan OTP',
+									showCancelButton: true,
+									confirmButtonText: 'Submit',
+									cancelButtonText: 'Cancel',
+									showLoaderOnConfirm: true,
+									footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(2)'>Kirim Ulang</p></a>`,
+									preConfirm: async (inputValue) => {
+										if (inputValue.trim() === '') {
+											// Show validation message for an empty string
+											Swal.showValidationMessage('OTP tidak boleh kosong');
+										}
+										else {
+											// Trigger form submission
+											ValidateOtp(inputValue.trim(), 2, "VerifWhatsapp")
+										}
+									},
+									allowOutsideClick: false
+								}).then((result) => {
+
+								});
+								clearInterval(countdownInterval); // Clear the existing countdown interval
+								startCountdown(30, 2);
+								Swal.showValidationMessage(d.message);
+							}
+							else {
+								Swal.fire({
+									icon: "error",
+									title: "Oops...",
+									text: d.message
+								});
+							}
+						}
+					});
+
+				}
+			});
+		}
+	}
+	function SendOtpAgain(TypeSendOtp) {
+		clearInterval(countdownInterval);
+		startCountdown(30, TypeSendOtp);
+		if (TypeSendOtp == 1) {
+			$.ajax({
+				url: '../Login/SendEmailOTP',
+				type: 'POST',
+				success: function (d) {
+
+				}
+			});
+		}
+		else if (TypeSendOtp == 2) {
+			$.ajax({
+				url: '../Login/SendWaOTP',
+				type: 'POST',
+				success: function (d) {
+
+				}
+			});
+		}
+	}
+
+	function ValidateOtp(Otp, TypeOtp, ChangeWhat) {
+		$.ajax({
+			url: '../Profile/ValidateOtp',
+			type: 'POST',
+			data: { "otp": Otp, "type": TypeOtp },
+			success: function (d) {
+				debugger;
+				if (d.statusCode == "1") {
+
+					if (ChangeWhat == "Email") {
+						Swal.fire({
+							title: "Ubah Email",
+							input: 'email',
+							text: 'Masukan Email baru anda',
+							inputPlaceholder: 'Masukan Email',
+							showCancelButton: true,
+							confirmButtonText: "Submit",
+							showLoaderOnConfirm: true,
+							allowOutsideClick: false,
+							preConfirm: (inputValue) => {
+								if (inputValue.trim() === '') {
+									Swal.showValidationMessage('Email tidak boleh kosong');
+								}
+								else {
+									SaveChange(inputValue.trim(), 1, TypeOtp)
+								}
+							}
+						}).then((result) => {
+
+						});
+					}
+					else if (ChangeWhat == "Whatsapp") {
+						Swal.fire({
+							title: "Ubah Whatsapp",
+							input: 'text',
+							text: 'Masukan No Whatsapp baru anda',
+							inputPlaceholder: 'Masukan No Whatsapp',
+							showCancelButton: true,
+							confirmButtonText: "Submit",
+							showLoaderOnConfirm: true,
+							allowOutsideClick: false,
+							preConfirm: (inputValue) => {
+								if (inputValue.trim() === '') {
+									Swal.showValidationMessage('No Whatsapp tidak boleh kosong');
+								}
+								else {
+									SaveChange(inputValue.trim(), 2, TypeOtp)
+								}
+							}
+						}).then((result) => {
+
+						});
+					}
+					else if (ChangeWhat == "Password") {
+						Swal.fire({
+							title: "Ubah Password",
+							html: `
+								<form class="form-group pb-2 custom-form" id="FormData">
+									<div class="mb-1 d-block text-left">Password Lama</div>
+									<div class="input-group mb-3">
+										<input type="password" class="form-control" id="passLama" placeholder="Masukan Password Lama">
+										<div class="eye-toggle input-group-append" onclick="ToggleMata('passLama', 'passLamaEye')">
+											<div class="input-group-text">
+												<span id="passLamaEye" class="pass-eye fas fa-eye-slash"></span>
+											</div>
+										</div>
+									</div>
+
+									<div class="mb-1 d-block text-left">Password Baru</div>
+									<div class="input-group mb-3">
+										<input type="password" class="form-control" id="passBaru" placeholder="Masukan Password Baru">
+										<div class="eye-toggle input-group-append" onclick="ToggleMata('passBaru', 'passBaruEye')">
+											<div class="input-group-text">
+												<span id="passBaruEye" class="pass-eye fas fa-eye-slash"></span>
+											</div>
+										</div>
+									</div>
+
+									<div class="mb-1 d-block text-left">Konfirmasi Password Baru</div>
+									<div class="input-group mb-3">
+										<input type="password" class="form-control" id="passKonfirmasi" placeholder="Konfirmasi Password Baru">
+										<div class="eye-toggle input-group-append" onclick="ToggleMata('passKonfirmasi', 'passKonfirmasiEye')">
+											<div class="input-group-text">
+												<span id="passKonfirmasiEye" class="pass-eye fas fa-eye-slash"></span>
+											</div>
+										</div>
+									</div>
+								</form>
+								`,
+							showDenyButton: true,
+							showLoaderOnConfirm: true,
+							confirmButtonText: 'Simpan',
+							denyButtonText: 'Batal',
+							customClass: {
+								title: 'text-left'
+							},
+							preConfirm: async () => {
+								if ($('#passLama').val() === '' || $('#passBaru').val() === '' || $('#passKonfirmasi').val() === '') {
+									Swal.showValidationMessage('Password Tidak boleh kosong');
+								}
+								else if ($('#passKonfirmasi').val() !== $('#passBaru').val()) {
+									Swal.showValidationMessage('Password Baru dan Konfirmasi Tidak Sama');
+								}
+								else {
+									var passwordInput = $('#passBaru').val()
+
+									SaveChange(passwordInput, 3, TypeOtp)
+								}
+							},
+							allowOutsideClick: false
+						}).then((result) => {
+
+						});
+					}
+					else if (ChangeWhat == "VerifEmail") {
+						VerifEmail = true;
+						$("#warningEmail").hide()
+						$("#verifikasiEmail").hide()
+						$(".blink_me").hide()
+						$("#verifiedemail").show()
+						Swal.fire({
+							icon: "success",
+							title: "Email berhasil di Verifikasi",
+							text: "Lakukan login ulang apa bila ingin mengakses Dashboard"
+						});
+					}
+					else if (ChangeWhat == "VerifWhatsapp") {
+						VerifWA = true;
+						$("#warningNoWa").hide()
+						$("#verifikasiWa").hide()
+						$(".blink_me").hide()
+						$("#verifiedwa").show()
+						Swal.fire({
+							icon: "success",
+							title: "Whatsapp berhasil di Verifikasi",
+							text: "Lakukan login ulang apa bila ingin mengakses Dashboard"
+						});
+					}
+					else {
+						Swal.fire({
+							icon: "error",
+							title: "Oops...",
+							text: d.message
+						});
+					}
+				}
+				else {
+					var MessageSwal = '';
+
+					if (TypeOtp == 1) {
+						MessageSwal = 'Kode OTP telah dikirim melalui Email ke ' + d.valueGeneratorOtp
+					}
+					else {
+						MessageSwal = 'Kode OTP telah dikirim melalui Whatsapp ke ' + d.valueGeneratorOtp
+					}
+
+					Swal.fire({
+						title: 'Validasi OTP',
+						input: 'text',
+						text: MessageSwal,
+						inputPlaceholder: 'Masukan OTP',
+						showCancelButton: true,
+						confirmButtonText: 'Submit',
+						cancelButtonText: 'Cancel',
+						showLoaderOnConfirm: true,
+						footer: `<p id='textFooterOtp'>Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(` + TypeOtp + `)'>Kirim Ulang</p></a>`,
+						preConfirm: (inputValue) => {
+							if (inputValue.trim() === '') {
+								// Show validation message for an empty string
+								Swal.showValidationMessage('OTP tidak boleh kosong');
+							}
+							else {
+								ValidateOtp(inputValue.trim(), TypeOtp, ChangeWhat)
+							}
+						},
+						allowOutsideClick: false
+					}).then((result) => {
+
+					});
+					Swal.showValidationMessage(d.message);
+				}
+			}
+		});
+	}
+	function ValidatePassword(password, TypeOtp) {
+		$.ajax({
+			url: '../Profile/ValidatePassword',
+			type: 'POST',
+			data: { "password": password },
+			success: function (d) {
+				console.log(d)
+				if (d.statusCode == "1") {
+					if (TypeOtp == 1) {
+						Swal.fire({
+							title: "Ubah Email",
+							input: 'email',
+							text: 'Masukan Email baru anda',
+							inputPlaceholder: 'Masukan Email',
+							showCancelButton: true,
+							confirmButtonText: "Submit",
+							showLoaderOnConfirm: true,
+							allowOutsideClick: false,
+							preConfirm: (inputValue) => {
+								if (inputValue.trim() === '') {
+									Swal.showValidationMessage('Email tidak boleh kosong');
+								}
+								else {
+									SaveChange(inputValue.trim(), 1, 3)
+								}
+							}
+						}).then((result) => {
+
+						});
+					}
+					else if (TypeOtp == 2) {
+						Swal.fire({
+							title: "Ubah Whatsapp",
+							input: 'text',
+							text: 'Masukan No Whatsapp baru anda',
+							inputPlaceholder: 'Masukan No Whatsapp',
+							showCancelButton: true,
+							confirmButtonText: "Submit",
+							showLoaderOnConfirm: true,
+							allowOutsideClick: false,
+							preConfirm: (inputValue) => {
+								if (inputValue.trim() === '') {
+									Swal.showValidationMessage('No Whatsapp tidak boleh kosong');
+								}
+								else {
+									SaveChange(inputValue.trim(), 2, 3)
+								}
+							}
+						}).then((result) => {
+
+						});
+					}
+					else if (TypeOtp == 3) {
+						Swal.fire({
+							title: "Ubah Password",
+							html: `
+									<form class="form-group pb-2 custom-form" id="FormData">
+										<div class="mb-1 d-block text-left">Password Lama</div>
+										<div class="input-group mb-3">
+											<input type="password" class="form-control" id="passLama" placeholder="Masukan Password Lama">
+											<div class="eye-toggle input-group-append" onclick="ToggleMata('passLama', 'passLamaEye')">
+												<div class="input-group-text">
+													<span id="passLamaEye" class="pass-eye fas fa-eye-slash"></span>
+												</div>
+											</div>
+										</div>
+
+										<div class="mb-1 d-block text-left">Password Baru</div>
+										<div class="input-group mb-3">
+											<input type="password" class="form-control" id="passBaru" placeholder="Masukan Password Baru">
+											<div class="eye-toggle input-group-append" onclick="ToggleMata('passBaru', 'passBaruEye')">
+												<div class="input-group-text">
+													<span id="passBaruEye" class="pass-eye fas fa-eye-slash"></span>
+												</div>
+											</div>
+										</div>
+
+										<div class="mb-1 d-block text-left">Konfirmasi Password Baru</div>
+										<div class="input-group mb-3">
+											<input type="password" class="form-control" id="passKonfirmasi" placeholder="Konfirmasi Password Baru">
+											<div class="eye-toggle input-group-append" onclick="ToggleMata('passKonfirmasi', 'passKonfirmasiEye')">
+												<div class="input-group-text">
+													<span id="passKonfirmasiEye" class="pass-eye fas fa-eye-slash"></span>
+												</div>
+											</div>
+										</div>
+									</form>
+									`,
+							showCancelButton: true,
+							showLoaderOnConfirm: true,
+							confirmButtonText: 'Submit',
+							denyButtonText: '',
+							customClass: {
+								title: 'text-left'
+							},
+							preConfirm: async () => {
+								
+
+								if ($('#passLama').val() === '' || $('#passBaru').val() === '' || $('#passKonfirmasi').val() === '') {
+									Swal.showValidationMessage('Password Tidak boleh kosong');
+								}
+								else if ($('#passKonfirmasi').val() !== $('#passBaru').val()) {
+									Swal.showValidationMessage('Password Baru dan Konfirmasi Tidak Sama');
+								}
+								else {
+									var passwordInput = $('#passBaru').val()
+
+									SaveChange(passwordInput, 3, 3)
+								}
+							},
+							allowOutsideClick: false
+						}).then((result) => {
+
+						});
+					}
+					else {
+						Swal.fire({
+							icon: "error",
+							title: "Oops...",
+							text: d.message
+						});
+					}
+				}
+				else {
+					if (TypeOtp == 1) {
+						Swal.fire({
+							title: "Ubah Email",
+							input: 'password',
+							text: 'Masukan Password untuk melanjutkan',
+							inputPlaceholder: 'Masukan Password',
+							showCancelButton: true,
+							confirmButtonText: "Submit",
+							showLoaderOnConfirm: true,
+							allowOutsideClick: false,
+							preConfirm: (inputValue) => {
+								if (inputValue.trim() === '') {
+									Swal.showValidationMessage('Password tidak boleh kosong');
+								}
+								else {
+									ValidatePassword(inputValue.trim(), TypeOtp)
+								}
+							}
+						}).then((result) => {
+
+						});
+					}
+					else if (TypeOtp == 2) {
+						Swal.fire({
+							title: "Ubah Whatsapp",
+							input: 'password',
+							text: 'Masukan Password untuk melanjutkan',
+							inputPlaceholder: 'Masukan Password',
+							showCancelButton: true,
+							confirmButtonText: "Submit",
+							showLoaderOnConfirm: true,
+							allowOutsideClick: false,
+							preConfirm: (inputValue) => {
+								if (inputValue.trim() === '') {
+									Swal.showValidationMessage('Password tidak boleh kosong');
+								}
+								else {
+									ValidatePassword(inputValue.trim(), TypeOtp)
+								}
+							}
+						}).then((result) => {
+
+						});
+					}
+					else if (TypeOtp == 3) {
+						Swal.fire({
+							title: "Ubah Password",
+							input: 'password',
+							text: 'Masukan Password untuk melanjutkan',
+							inputPlaceholder: 'Masukan Password',
+							showCancelButton: true,
+							confirmButtonText: "Submit",
+							showLoaderOnConfirm: true,
+							allowOutsideClick: false,
+							preConfirm: (inputValue) => {
+								if (inputValue.trim() === '') {
+									Swal.showValidationMessage('Password tidak boleh kosong');
+								}
+								else {
+									ValidatePassword(inputValue.trim(), TypeOtp)
+								}
+							}
+						}).then((result) => {
+
+						});
+					}
+					Swal.showValidationMessage(d.message);
+				}
+			}
+		});
+
+	}
+
+	function SaveChange(valueChange, ChangeWhat, TypeOtp) {
+		if (ChangeWhat == 1) {
+			$.ajax({
+				url: '../Profile/UpdateProfile',
+				type: 'POST',
+				data: { 'value': valueChange, 'changeWhat': ChangeWhat, 'typeOtp': TypeOtp },
+				success: function (d) {
+					if (d.statusCode == "1") {
+						DetailProfile();
+						// $("#warningEmail").show()
+						// $("#verifikasiEmail").show()
+						// $(".blink_me").show()
+						// $("#verifiedemail").hide()
+						NotifikasiSukses("Berhasil", "Email berhasil di ubah");
+					}
+					else {
+						Swal.fire({
+							icon: "error",
+							title: "Oops...",
+							text: d.message
+						});
+					}
+				}
+			});
+		}
+		else if (ChangeWhat == 2) {
+			$.ajax({
+				url: '../Profile/UpdateProfile',
+				type: 'POST',
+				data: { 'value': valueChange, 'changeWhat': ChangeWhat, 'typeOtp': TypeOtp },
+				success: function (d) {
+					if (d.statusCode == "1") {
+						console.log(d)
+						DetailProfile();
+						// $("#warningNoWa").show()
+						// $("#verifikasiWa").show()
+						// $(".blink_me").show()
+						// $("#verifiedwa").hide()
+						NotifikasiSukses("Berhasil", "No Whatsapp berhasil di ubah");
+					}
+					else {
+						Swal.fire({
+							icon: "error",
+							title: "Oops...",
+							text: d.message
+						});
+					}
+				}
+			});
+		}
+		else if (ChangeWhat == 3) {
+			$.ajax({
+				url: '../Profile/UpdateProfile',
+				type: 'POST',
+				data: { 'value': valueChange, 'changeWhat': ChangeWhat, 'typeOtp': TypeOtp },
+				success: function (d) {
+					if (d.statusCode == "1") {
+						NotifikasiSukses("Berhasil", "Password berhasil di ubah");
+					}
+					else {
+						Swal.fire({
+							icon: "error",
+							title: "Oops...",
+							text: d.message
+						});
+					}
+				}
+			});
+		}
+	}
+
+	function startCountdown(seconds, typeOtp) {
+		var countdownElement = $('#textFooterOtp');
+		countdownElement.html("Mohon tunggu dalam <b>" + seconds + " detik</b> untuk kirim ulang");
+
+		countdownInterval = setInterval(function () {
+			seconds--;
+
+			countdownElement.html("Mohon tunggu dalam <b>" + seconds + " detik</b> untuk kirim ulang");
+
+			if (seconds === 0) {
+				clearInterval(countdownInterval);
+				// If the countdown reaches 0, replace the footer with the original text
+				replaceFooterOriginalText(typeOtp);
+			}
+		}, 1000);
+	}
+	function replaceFooterOriginalText(typeOtp) {
+		var originalText = "Tidak menerima kode? <a href='javascript:void(0)' onclick='SendOtpAgain(" + typeOtp + ")'>Kirim Ulang</a>";
+		$('#textFooterOtp').html(originalText);
+	}
+
+	function ToggleMata(id, idMata) {
+		var passwordElement = document.getElementById(id);
+		var mataElement = document.getElementById(idMata);
+		if (passwordElement.type === "password") {
+			passwordElement.type = "text";
+			mataElement.classList.remove("fa-eye-slash");
+			mataElement.classList.add("fa-eye");
+		} else {
+			passwordElement.type = "password";
+			mataElement.classList.remove("fa-eye");
+			mataElement.classList.add("fa-eye-slash");
+		}
+	}
+
+</script>
+
+
+

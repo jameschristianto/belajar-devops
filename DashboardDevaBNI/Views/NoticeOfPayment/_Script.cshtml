@@ -1,0 +1,2806 @@
+﻿
+
+
+<script>
+    var Table;
+    var TableDataDetailNopTemp;
+    var TableDetailNop;
+    var TableDetailNopView;
+    var TableDataDetailNopNew;
+    var TableFileNopView;
+    var TableDataFileNopTemp;
+    var TableFileNop;
+    var TableDataDetailNopNewValue = [];
+    var State;
+    var StateDetailNop;
+    var StateFileNop;
+    var RandomString;
+
+    $(document).ready(function () {
+        LoadDataTable();
+        $('#txtDueDateSearchParam').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                format: 'DD/MM/yyyy',
+                cancelLabel: 'Clear'
+            }
+        });
+
+        $('#txtDueDateSearchParam').on('apply.daterangepicker', function (ev, picker) {
+            $(this).val(picker.startDate.format('DD/MM/yyyy') + ' to ' + picker.endDate.format('DD/MM/yyyy'));
+        });
+
+        $('#txtDueDateSearchParam').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+        $("#txtDueDateSearchParam").on("input keydown keyup mousedown mouseup", function (e) {
+            e.preventDefault();
+        });
+    });
+
+    function LoadDataTable(data) {
+        if (Table != undefined) {
+            Table.destroy();
+        }
+
+        Table = $('#Table').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true,
+            serverSide: true,
+            orderMulti: false,
+            retrieve: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">',
+            ajax: {
+                "url": '../NoticeOfPayment/LoadData',
+                "type": "POST",
+                "datatype": "json",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: "Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data, <span id='selectedRowCount'>0 rows selected</span>",
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+
+            columns: [
+                {
+                    responsivePriority: 1, "data": null, title: "", orderable: false, defaultContent: '', title: "<input type='checkbox' id='checkAll'>", render: function (data, type, full, meta) {
+                        // Check if the status is 'done'
+                        if (full.status === 'Verified') {
+                            return '<input type="checkbox" disabled>';
+                        } else {
+                            return '<input type="checkbox">';
+                        }
+                    }
+                },
+                { responsivePriority: 2, "data": "number", title: "No" },
+                {
+                    responsivePriority: 3,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        if (full.status === 'Verified') {
+                            return '<td class="project-actions text-right">' +
+                                '<div class="dropdown">' +
+                                '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                                'Action' +
+                                '</button>' +
+                                '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "EditView(' + full.id + ')" > <i class="fas fa-pencil-alt"> </i> Edit</a >' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "View(' + full.id + ')" > <i class="fas fa-eye"> </i> View</a >' +
+                                '</div>' +
+                                '</div>' +
+                                '</td>'
+                        } else {
+                            return '<td class="project-actions text-right">' +
+                                '<div class="dropdown">' +
+                                '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                                'Action' +
+                                '</button>' +
+                                '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "SendDataSingle(' + full.id + ')" > <i class="fas fa-paper-plane"> </i> Send</a >' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "Edit(' + full.id + ')" > <i class="fas fa-pencil-alt"> </i> Edit</a >' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "View(' + full.id + ')" > <i class="fas fa-eye"> </i> View</a >' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "Delete(' + full.id + ')" > <i class="fas fa-trash"> </i> Delete</a >' +
+                                '</div>' +
+                                '</div>' +
+                                '</td>'
+                        }
+
+                    }
+                },
+                { responsivePriority: 4, "data": "nopNo", title: "NOP No" },
+
+                {
+                    responsivePriority: 6,
+                    "data": "dueDate", title: "Due Date",
+                    className: "text-center",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = moment(data).locale('id').format('DD MMM yyyy')
+                        }
+                        return format
+                    }
+                },
+                {
+                    responsivePriority: 7,
+                    data: "interestDays",
+                    title: "Interest Days",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        // if (type === 'display' || type === 'filter') {
+                        //     return currencyFormat(parseFloat(data));
+                        // }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 8,
+                    data: "interestRate",
+                    title: "Interest Rate (%)",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        // if (type === 'display' || type === 'filter') {
+                        //     return currencyFormat(parseFloat(data));
+                        // }
+                        return data;
+                    }
+                },
+
+                { responsivePriority: 9, "data": "rekNameAcc", title: "Rek Name" },
+                { responsivePriority: 10, "data": "cur", title: "Currency", className: "text-center" },
+                {
+                    responsivePriority: 10, "data": "lastSentDate", title: "Last Sent Date", className: "text-center",
+                    "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = moment(data).locale('id').format('DD MMM yyyy')
+                        }
+                        return format
+                    }
+                },
+                { responsivePriority: 11, "data": "status", title: "Status", className: "text-center" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 10
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        $('#checkAll').on('click', function () {
+            var checkboxes = $('tbody input[type="checkbox"]:not(:disabled)');
+            checkboxes.prop('checked', $(this).prop('checked'));
+            updateSelectedRowCount();
+        });
+
+        $('tbody').on('click', 'input[type="checkbox"]', function () {
+            updateSelectedRowCount();
+        });
+
+        function updateSelectedRowCount() {
+            var selectedRowCount = $('tbody input[type="checkbox"]:checked').length;
+            $('#selectedRowCount').text(selectedRowCount + (selectedRowCount === 1 ? ' row selected' : ' rows selected'));
+            $('#prosesDataBtn').prop('disabled', selectedRowCount >= 0);
+            $('#prosesDataBtn').prop('disabled', selectedRowCount === 0);
+        }
+
+        //---------------------Function untuk reset data pencarian----------------//
+        $('#BtnSearch').click(function () {
+            Table.columns(2).search($('#txtNopNoSearchParam').val());
+            Table.columns(3).search($('#txtDueDateSearchParam').val());
+
+            //hit search ke server
+            Table.draw();
+        });
+
+
+        //---------------------Function untuk reset data pencarian----------------//
+        $('#BtnClearSearch').click(function () {
+            $('#txtNopNoSearchParam').val("");
+            $('#txtDueDateSearchParam').val("");
+
+            Table.columns(2).search($('#txtNopNoSearchParam').val());
+            Table.columns(3).search($('#txtDueDateSearchParam').val());
+            //hit search ke server
+            Table.draw();
+        });
+
+        Table.columns.adjust().responsive.recalc();
+    }
+    function LoadDataDetailNopNew() {
+        if (TableDataDetailNopNew != undefined) {
+            TableDataDetailNopNew.destroy();
+        }
+
+        TableDataDetailNopNew = $('#TableDataDetailNopNew').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: false, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            data: TableDataDetailNopNewValue,
+            // ajax: {
+            //     "url": '../NoticeOfPayment/LoadDataDetailNopNew',
+            //     "type": "POST",
+            //     "datatype": "json",
+            //     error: function (jqXHR, textStatus, errorThrown) {
+            //         window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+            //     }
+            // },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                {
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "render": function (data, type, full, meta) {
+                        if (full.idDetailFromGet != null) {
+                            return '<td class="project-actions text-right">' +
+                                '<div class="dropdown">' +
+                                '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                                'Action' +
+                                '</button>' +
+                                '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "EditDetailNopEdit(' + full.idDetailFromGet + ')" > <i class="fas fa-pencil text-info"> </i> Edit</a >' +
+                                '</div>' +
+                                '</div>' +
+                                '</td>'
+                        }
+                        else {
+                            return '<td class="project-actions text-right">' +
+                                '<div class="dropdown">' +
+                                '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                                'Action' +
+                                '</button>' +
+                                '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                                '<a class="dropdown-item" href = "javascript:void(0)" onclick = "EditDetailNopCreate(' + full.id + ')" > <i class="fas fa-pencil text-info"> </i> Edit</a >' +
+                                '</div>' +
+                                '</div>' +
+                                '</td>'
+                        }
+
+                    }
+                },
+                { "data": "creditorRef", title: "Creditor Ref" },
+                {
+                    data: "outstanding",
+                    title: "Outstanding",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    data: "principal",
+                    title: "Principal",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    data: "interest",
+                    title: "Interest",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    data: "fee",
+                    title: "Fee",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                }
+            ],
+            // columnDefs: [
+            //     {
+            //         render: function (data, type, full, meta) {
+            //             return "<div class='text-wrap width-comment'>" + data + "</div>";
+            //         },
+            //         targets: 4
+            //     }
+            // ],
+            // "order": [[1, "desc"]]
+        });
+
+        $('#DueDate').change(function () {
+            // TableDataDetailNopNew.columns(2).search($("#DueDate").val());
+            // TableDataDetailNopNew.draw();
+
+            $.ajax({
+                type: 'GET',
+                url: '../Login/CekSession',
+                success: function (hasil) {
+                    if (hasil == true) {
+                        $.ajax({
+                            url: '../NoticeOfPayment/LoadDataDetailNopNew',
+                            type: 'POST',
+                            data: { "DueDate": $("#DueDate").val() },
+                            success: function (d) {
+                                TableDataDetailNopNewValue = d.data;
+                                TableDataDetailNopNew.clear().rows.add(TableDataDetailNopNewValue).draw();
+                            }
+                        });
+                    }
+                    else {
+                        window.location.href = "../Login/Login?a=true";
+                    }
+                }
+            });
+        });
+
+        TableDataDetailNopNew.columns.adjust().responsive.recalc();
+    }
+    function LoadDataDetailNopView() {
+        if (TableDataDetailNopNew != undefined) {
+            TableDataDetailNopNew.destroy();
+        }
+
+        TableDataDetailNopNew = $('#TableDataDetailNopNew').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: false, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            data: TableDataDetailNopNewValue,
+            // ajax: {
+            //     "url": '../NoticeOfPayment/LoadDataDetailNopNew',
+            //     "type": "POST",
+            //     "datatype": "json",
+            //     error: function (jqXHR, textStatus, errorThrown) {
+            //         window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+            //     }
+            // },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { "data": "creditorRef", title: "Creditor Ref" },
+                {
+                    data: "outstanding",
+                    title: "Outstanding",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    data: "principal",
+                    title: "Principal",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    data: "interest",
+                    title: "Interest",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    data: "fee",
+                    title: "Fee",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                }
+            ],
+            // columnDefs: [
+            //     {
+            //         render: function (data, type, full, meta) {
+            //             return "<div class='text-wrap width-comment'>" + data + "</div>";
+            //         },
+            //         targets: 4
+            //     }
+            // ],
+            // "order": [[1, "desc"]]
+        });
+
+        $('#DueDate').change(function () {
+            // TableDataDetailNopNew.columns(2).search($("#DueDate").val());
+            // TableDataDetailNopNew.draw();
+
+            $.ajax({
+                type: 'GET',
+                url: '../Login/CekSession',
+                success: function (hasil) {
+                    if (hasil == true) {
+                        $.ajax({
+                            url: '../NoticeOfPayment/LoadDataDetailNopNew',
+                            type: 'POST',
+                            data: { "DueDate": $("#DueDate").val() },
+                            success: function (d) {
+                                TableDataDetailNopNewValue = d.data;
+                                TableDataDetailNopNew.clear().rows.add(TableDataDetailNopNewValue).draw();
+                            }
+                        });
+                    }
+                    else {
+                        window.location.href = "../Login/Login?a=true";
+                    }
+                }
+            });
+        });
+
+        TableDataDetailNopNew.columns.adjust().responsive.recalc();
+    }
+    function LoadOnlyDataTableDetailNopNew(id) {
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    $.ajax({
+                        url: '../NoticeOfPayment/LoadOnlyDataDetailNopNew',
+                        type: 'POST',
+                        data: { "Id": id },
+                        success: function (d) {
+                            TableDataDetailNopNewValue = d.data;
+                            TableDataDetailNopNew.clear().rows.add(TableDataDetailNopNewValue).draw();
+                        }
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function LoadDataTableDataFileNopTemp(data) {
+        if (TableDataFileNopTemp != undefined) {
+            TableDataFileNopTemp.destroy();
+        }
+
+        TableDataFileNopTemp = $('#TableDataFileNopTemp').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfPayment/LoadDataFileNopTemp',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "randomstring": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DownloadFilePendukungTemp(' + full.id + ')" > <i class="fas fa-download"> </i> Download</a >' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteFileNopTemp(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "fileName", title: "File Name" },
+                { responsivePriority: 4, "data": "fileSize", title: "File Size" },
+                { responsivePriority: 5, "data": "fileExt", title: "File Ext" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableDataFileNopTemp.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableFileNop(data) {
+        if (TableFileNop != undefined) {
+            TableFileNop.destroy();
+        }
+
+        TableFileNop = $('#TableFileNop').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfPayment/LoadDataFileNop',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NopId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DownloadFilePendukung(' + full.id + ')" > <i class="fas fa-download"> </i> Download</a >' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteFileNop(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "fileName", title: "File Name" },
+                { responsivePriority: 4, "data": "fileSize", title: "File Size" },
+                { responsivePriority: 5, "data": "fileExt", title: "File Ext" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableFileNop.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableFileNopView(data) {
+        if (TableFileNopView != undefined) {
+            TableFileNopView.destroy();
+        }
+
+        TableFileNopView = $('#TableFileNopView').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfPayment/LoadDataFileNop',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NopId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DownloadFilePendukung(' + full.id + ')" > <i class="fas fa-download"> </i> Download</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "fileName", title: "File Name" },
+                { responsivePriority: 4, "data": "fileSize", title: "File Size" },
+                { responsivePriority: 5, "data": "fileExt", title: "File Ext" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableFileNopView.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableFileNopEditView(data) {
+        if (TableFileNopView != undefined) {
+            TableFileNopView.destroy();
+        }
+
+        TableFileNopView = $('#TableFileNopEdit').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfPayment/LoadDataFileNop',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NopId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DownloadFilePendukung(' + full.id + ')" > <i class="fas fa-download"> </i> Download</a >' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteFileNop(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "fileName", title: "File Name" },
+                { responsivePriority: 4, "data": "fileSize", title: "File Size" },
+                { responsivePriority: 5, "data": "fileExt", title: "File Ext" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableFileNopView.columns.adjust().responsive.recalc();
+    }
+
+
+
+
+    function Create() {
+        ShowModal('bd-example-modal-lg');
+        State = "create";
+        UrlPartialView = '../NoticeOfPayment/Create';
+        //Cek session masih aktif atau tidak
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        RandomString = RandomStringView(5);
+                        // LoadDataTableDataDetailNopTemp(RandomString)
+                        TableDataDetailNopNewValue = [];
+                        LoadDataDetailNopNew()
+                        LoadDataTableDataFileNopTemp(RandomString)
+                        DropdownRekIdServerSide("RekId", 50, false);
+                        DropdownLookupServerSide("Cur", "Currency", 50, false);
+
+                        ValidationForm();
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function CreateBulk() {
+        ShowModal('bd-example-modal-lg');
+        State = "create";
+        UrlPartialView = '../NoticeOfPayment/CreateBulk';
+        //Cek session masih aktif atau tidak
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        $('.dropify').dropify({
+                            error: {
+                                'fileSize': 'The file size is too big (2MB max).',
+                            }
+                        });
+                        ValidationFormBulk();
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function CreateDetailNop(dataP) {
+        StateDetailNop = dataP;
+        UrlPartialView = '../NoticeOfPayment/CreateDetailNop';
+        //Cek session masih aktif atau tidak
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        var modalbody = $('#content-lg');
+                        modalbody.html(data);
+                        $('#modal-lg').modal({
+                            backdrop: 'static',
+                            keyboard: false,
+                        });
+
+                        $('#modal-lg').on('shown.bs.modal', function () {
+                            DropdownCreditorRefServerSide("CreditorRef", 50, false);
+                            InputOnlyNumber("Amount");
+                            InputOnlyNumber("AmountIdr");
+
+                        });
+
+                        InputOnlyNumber("Outstanding");
+                        InputOnlyNumber("Principal");
+                        InputOnlyNumber("Interest");
+                        InputOnlyNumber("Fee");
+
+                        ValidationFormDetailNop();
+
+                        $(document).on('click', '[data-dismiss="modal"]', function () {
+                            $('#modal-lg').modal('hide');
+                        });
+                        $("#modal-lg").modal('show');
+
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function CreateFileNop(dataP) {
+        StateFileNop = dataP;
+        UrlPartialView = '../NoticeOfPayment/CreateFileNop';
+        //Cek session masih aktif atau tidak
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        var modalbody = $('#content-lg');
+                        modalbody.html(data);
+                        $('#modal-lg').modal({
+                            backdrop: 'static',
+                            keyboard: false,
+                        });
+                        $('.dropify').dropify({
+                            error: {
+                                'fileSize': 'The file size is too big (10MB max).',
+                            }
+                        });
+                        ValidationFormFileNop();
+
+                        $(document).on('click', '[data-dismiss="modal"]', function () {
+                            $('#modal-lg').modal('hide');
+                        });
+                        $("#modal-lg").modal('show');
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function Edit(id) {
+        State = "edit";
+        SearchData = { "id": id }
+        UrlPartialView = '../NoticeOfPayment/Edit';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        LoadOnlyDataTableDetailNopNew(id)
+                        LoadDataDetailNopNew()
+                        // TableDataDetailNopNew.columns(2).search($("#DueDate").val());
+                        // TableDataDetailNopNew.draw();
+                        // LoadDataTableDetailNop($("#Id").val())
+                        LoadDataTableFileNop($("#Id").val())
+                        DropdownRekIdServerSide("RekId", 50, false);
+                        DropdownLookupServerSide("Cur", "Currency", 50, false);
+                        $("#InterestDays").val($("#InterestDays").val().replace(",00", "").replace(".00", ""));
+                        $("#InterestRate").val($("#InterestRate").val().replace(",00", "").replace(".00", ""));
+                        ValidationForm();
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+
+    }
+    function EditView(id) {
+        State = "edit";
+        SearchData = { "id": id }
+        UrlPartialView = '../NoticeOfPayment/EditView';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        LoadDataDetailNopNew()
+                        TableDataDetailNopNew.columns(2).search($("#DueDate").val());
+                        TableDataDetailNopNew.draw();
+                        // LoadDataTableFileNop($("#Id").val())
+                        LoadDataTableDetailNopView($("#Id").val());
+                        LoadDataTableFileNopView($("#Id").val());
+                        DropdownRekIdServerSide("RekId", 50, false);
+                        DropdownLookupServerSide("Cur", "Currency", 50, false);
+                        $("#InterestDays").val($("#InterestDays").val().replace(",00", "").replace(".00", ""));
+                        $("#InterestRate").val($("#InterestRate").val().replace(",00", "").replace(".00", ""));
+                        ValidationForm();
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+
+    }
+    function EditDetailNopCreate(id) {
+        SearchData = { "id": id }
+        UrlPartialView = '../NoticeOfPayment/EditDetailNopCreate';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        var modalbody = $('#content-lg');
+                        modalbody.html(data);
+                        $('#modal-lg').modal({
+                            backdrop: 'static',
+                            keyboard: false,
+                        });
+                        $('#modal-lg').on('shown.bs.modal', function () {
+                            InputOnlyNumber("Amount");
+                            InputOnlyNumber("AmountIdr");
+                        });
+                        var item = TableDataDetailNopNewValue.find(item => item.id === id);
+                        $("#IdDetailNop").val(id)
+                        $("#CreditorRef").val(item.creditorRef)
+                        $("#Outstanding").val(currencyFormat(parseFloat(item.outstanding)))
+                        $("#Principal").val(currencyFormat(parseFloat(item.principal)))
+                        $("#Interest").val(currencyFormat(parseFloat(item.interest)))
+                        $("#Fee").val(currencyFormat(parseFloat(item.fee)))
+
+                        ValidationFormDetailNopEditCreate();
+
+                        $(document).on('click', '[data-dismiss="modal"]', function () {
+                            $('#modal-lg').modal('hide');
+                        });
+                        $("#modal-lg").modal('show');
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function EditDetailNopEdit(id) {
+        SearchData = { "id": id }
+        UrlPartialView = '../NoticeOfPayment/EditDetailNopCreate';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        var modalbody = $('#content-lg');
+                        modalbody.html(data);
+                        $('#modal-lg').modal({
+                            backdrop: 'static',
+                            keyboard: false,
+                        });
+                        $('#modal-lg').on('shown.bs.modal', function () {
+                            InputOnlyNumber("Amount");
+                            InputOnlyNumber("AmountIdr");
+                        });
+                        var item = TableDataDetailNopNewValue.find(item => item.idDetailFromGet === id);
+                        $("#IdDetailNop").val(id)
+                        $("#CreditorRef").val(item.creditorRef)
+                        $("#Outstanding").val(currencyFormat(parseFloat(item.outstanding)))
+                        $("#Principal").val(currencyFormat(parseFloat(item.principal)))
+                        $("#Interest").val(currencyFormat(parseFloat(item.interest)))
+                        $("#Fee").val(currencyFormat(parseFloat(item.fee)))
+
+                        ValidationFormDetailNopEditCreate();
+
+                        $(document).on('click', '[data-dismiss="modal"]', function () {
+                            $('#modal-lg').modal('hide');
+                        });
+                        $("#modal-lg").modal('show');
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function View(id) {
+        State = "view";
+        SearchData = { "id": id };
+        UrlPartialView = '../NoticeOfPayment/View';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    LoadPartialViewData(UrlPartialView, function (data) {
+                        $('#DivContentBody').hide();
+                        RenderView(data)
+                        LoadOnlyDataTableDetailNopNew(id)
+                        LoadDataDetailNopView()
+                        // LoadDataTableFileNop($("#Id").val())
+                        LoadDataTableDetailNopView($("#Id").val());
+                        LoadDataTableFileNopView($("#Id").val());
+                        DropdownRekIdServerSide("RekId", 50, false);
+                        DropdownLookupServerSide("Cur", "Currency", 50, false);
+                        $("#InterestDays").val($("#InterestDays").val().replace(",00", "").replace(".00", ""));
+                        $("#InterestRate").val($("#InterestRate").val().replace(",00", "").replace(".00", ""));
+                        ValidationForm();
+                    }, SearchData);
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function Delete(id) {
+        State = "delete";
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: 'GET',
+                        url: '../Login/CekSession',
+                        success: function (hasil) {
+                            if (hasil == true) {
+                                $.ajax({
+                                    url: '../NoticeOfPayment/Delete',
+                                    type: 'POST',
+                                    data: { "Ids": id },
+                                    success: function (d) {
+                                        if (d == "") {
+                                            NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                        } else {
+                                            NotifikasiError("Error", "Data gagal dihapus!");
+                                        }
+                                        Table.draw();
+                                    }
+                                });
+                            }
+                            else {
+                                window.location.href = "../Login/Login?a=true";
+                            }
+                        }
+                    });
+                }
+            });
+        return false;
+    }
+    function DeleteDetailNopTemp(id) {
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: 'GET',
+                        url: '../Login/CekSession',
+                        success: function (hasil) {
+                            if (hasil == true) {
+                                //Cek session terlebih dahulu
+                                $.ajax({
+                                    url: '../NoticeOfPayment/DeleteDetailNopTemp',
+                                    type: 'POST',
+                                    data: { "Ids": id },
+                                    success: function (d) {
+                                        if (d == "") {
+                                            NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                        } else {
+                                            NotifikasiError("Error", "Data gagal dihapus!")
+                                        }
+                                        TableDataDetailNopTemp.draw();
+                                    }
+                                });
+                            }
+                            else {
+                                window.location.href = "../Login/Login?a=true";
+                            }
+                        }
+                    });
+                }
+            });
+        return false;
+    }
+    function DeleteDetailNop(id) {
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: 'GET',
+                        url: '../Login/CekSession',
+                        success: function (hasil) {
+                            if (hasil == true) {
+                                //Cek session terlebih dahulu
+                                $.ajax({
+                                    url: '../NoticeOfPayment/DeleteDetailNop',
+                                    type: 'POST',
+                                    data: { "Ids": id },
+                                    success: function (d) {
+                                        if (d == "") {
+                                            NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                        } else {
+                                            NotifikasiError("Error", "Data gagal dihapus!")
+                                        }
+                                        TableDetailNop.draw();
+                                    }
+                                });
+                            }
+                            else {
+                                window.location.href = "../Login/Login?a=true";
+                            }
+                        }
+                    });
+                }
+            });
+        return false;
+    }
+    function DeleteFileNopTemp(id) {
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: 'GET',
+                        url: '../Login/CekSession',
+                        success: function (hasil) {
+                            if (hasil == true) {
+                                //Cek session terlebih dahulu
+                                $.ajax({
+                                    url: '../NoticeOfPayment/DeleteFileNopTemp',
+                                    type: 'POST',
+                                    data: { "Ids": id },
+                                    success: function (d) {
+                                        if (d == "") {
+                                            NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                        } else {
+                                            NotifikasiError("Error", "Data gagal dihapus!")
+                                        }
+                                        TableDataFileNopTemp.draw();
+                                    }
+                                });
+                            }
+                            else {
+                                window.location.href = "../Login/Login?a=true";
+                            }
+                        }
+                    });
+                }
+            });
+        return false;
+    }
+    function DeleteFileNop(id) {
+        swal({
+            title: "Konfirmasi",
+            text: "Apakah Anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: 'GET',
+                        url: '../Login/CekSession',
+                        success: function (hasil) {
+                            if (hasil == true) {
+                                //Cek session terlebih dahulu
+                                $.ajax({
+                                    url: '../NoticeOfPayment/DeleteFileNop',
+                                    type: 'POST',
+                                    data: { "Ids": id },
+                                    success: function (d) {
+                                        if (d == "") {
+                                            NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                        } else {
+                                            NotifikasiError("Error", "Data gagal dihapus!")
+                                        }
+                                        TableFileNop.draw();
+                                    }
+                                });
+                            }
+                            else {
+                                window.location.href = "../Login/Login?a=true";
+                            }
+                        }
+                    });
+                }
+            });
+        return false;
+    }
+
+    
+    function ValidationForm() {
+        $.validator.addMethod("maxDigits", function (value, element, param) {
+            return this.optional(element) || /^\d+$/.test(value) && value.length <= param;
+        }, "Maksimal {0} digit");
+
+        $('#FormData').validate({
+            rules: {
+                NopNo: {
+                    required: true
+                },
+                RekId: {
+                    required: true
+                },
+                Cur: {
+                    required: true
+                },
+                DueDate: {
+                    required: true
+                },
+                InterestRate: {
+                    required: false,
+                    maxDigits: 5
+                },
+                InterestDays: {
+                    required: false,
+                    maxDigits: 5
+                }
+            },
+            messages: {
+                InterestRate: {
+                    required: "Maksimal 5 digit"
+                },
+                InterestDays: {
+                    required: "Maksimal 5 digit"
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+        $('#Submit').click(function () {
+            var url = '';
+            var $valid = $("#FormData").valid();
+            var acc = $("#RekId").find(":selected").text();
+            if (acc !== '' && acc !== null) {
+                $("#RekNameAcc").val(acc);
+            }
+
+            if (!$valid) {
+                //alert("False");
+                $validator.focusInvalid();
+                return false;
+            } else {
+                if (State == "create") {
+                    url = '../NoticeOfPayment/SubmitCreate';
+                }
+                else {
+                    url = '../NoticeOfPayment/SubmitEdit';
+                }
+                //Cek session terlebih dahulu
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: url,
+                                type: 'POST',
+                                data: $('#FormData').serialize() + "&listDetailNop=" + JSON.stringify(TableDataDetailNopNewValue) + "&randomString=" + RandomString,
+                                success: function (d) {
+                                    //Tampilkan alert status
+                                    if (d == "") {
+                                        BackDraft();
+                                        NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                        Table.draw();
+                                    } else {
+                                        NotifikasiError("Error", d)
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#Back").click(function () {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+        });
+    }
+    function ValidationFormDetailNop() {
+        //Untuk validasi form
+
+        $('#FormDetailNop').validate({
+            rules: {
+                CreditorRef: {
+                    required: true
+                },
+                Outstanding: {
+                    required: true
+                },
+                Principal: {
+                    required: true
+                },
+                Interest: {
+                    required: true
+                },
+                Fee: {
+                    required: true
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+        $('#SubmitDetailNop').click(function () {
+            var url = '';
+            var uniq = '';
+            var $validRekening = $("#FormDetailNop").valid();
+            if (!$validRekening) {
+                //alert("False");
+                $validator.focusInvalid();
+                return false;
+            } else {
+                if (StateDetailNop == "temp") {
+                    url = '../NoticeOfPayment/SubmitCreateDetailNopTemp';
+                    uniq = RandomString;
+                }
+                else {
+                    url = '../NoticeOfPayment/SubmitCreateDetailNop';
+                    uniq = $("#Id").val();
+                }
+                //Cek session terlebih dahulu
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: url,
+                                type: 'POST',
+                                data: $('#FormDetailNop').serialize() + "&uniq=" + uniq,
+                                success: function (d) {
+                                    //Tampilkan alert status
+                                    if (d == "") {
+                                        $('#modal-lg').modal('hide');
+                                        NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                        if (StateDetailNop == "temp") {
+                                            TableDataDetailNopTemp.draw();
+                                        }
+                                        else {
+                                            TableDetailNop.draw();
+                                        }
+                                    } else {
+                                        NotifikasiError("Error", d)
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#Back").click(function () {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+        });
+    }
+    function ValidationFormDetailNopEditCreate() {
+        $('#FormDetailNop').validate({
+            rules: {
+                Outstanding: {
+                    required: true
+                },
+                Principal: {
+                    required: true
+                },
+                Interest: {
+                    required: true
+                },
+                Fee: {
+                    required: true
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+
+        $('#SubmitDetailNop').click(function () {
+
+            if (State == 'create') {
+                var Id = $("#Id").val();
+                var item = TableDataDetailNopNewValue.find(item => item.id === parseInt(Id));
+
+                if (item) {
+                    var outstanding = $("#Outstanding").val();
+                    var principal = $("#Principal").val();
+                    var interest = $("#Interest").val();
+                    var fee = $("#Fee").val();
+
+                    item.outstanding = outstanding.replaceAll(".", "");
+                    item.principal = principal.replaceAll(".", "");
+                    item.interest = interest.replaceAll(".", "");
+                    item.fee = fee.replaceAll(".", "");
+                }
+                TableDataDetailNopNew.clear().rows.add(TableDataDetailNopNewValue).draw();
+                $('#CloseDetailNop').click();
+                NotifikasiSukses("Sukses", "Data berhasil diubah!");
+            }
+            else {
+                var Id = $("#IdDetailNop").val();
+                var item = TableDataDetailNopNewValue.find(item => item.idDetailFromGet === parseInt(Id));
+                var itemSecond = TableDataDetailNopNewValue.find(item => item.id === parseInt(Id));
+
+                if (item != undefined) {
+                    var outstanding = $("#Outstanding").val();
+                    var principal = $("#Principal").val();
+                    var interest = $("#Interest").val();
+                    var fee = $("#Fee").val();
+
+                    item.outstanding = outstanding.replaceAll(".", "");
+                    item.principal = principal.replaceAll(".", "");
+                    item.interest = interest.replaceAll(".", "");
+                    item.fee = fee.replaceAll(".", "");
+                }
+                
+                if (itemSecond != undefined) {
+                    var outstanding = $("#Outstanding").val();
+                    var principal = $("#Principal").val();
+                    var interest = $("#Interest").val();
+                    var fee = $("#Fee").val();
+
+                    itemSecond.outstanding = outstanding.replaceAll(".", "");
+                    itemSecond.principal = principal.replaceAll(".", "");
+                    itemSecond.interest = interest.replaceAll(".", "");
+                    itemSecond.fee = fee.replaceAll(".", "");
+                }
+
+                TableDataDetailNopNew.clear().rows.add(TableDataDetailNopNewValue).draw();
+                $('#CloseDetailNop').click();
+                NotifikasiSukses("Sukses", "Data berhasil diubah!");
+            }
+
+
+        });
+    }
+    function ValidationFormBulk() {
+
+        $('#FormDataBulk').validate({
+            rules: {
+                File: {
+                    required: true
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+        $('#SubmitBulk').click(function () {
+            var url = '';
+            var $validBulk = $("#FormDataBulk").valid();
+            if (!$validBulk) {
+                //alert("False");
+                $validator.focusInvalid();
+                return false;
+            } else {
+                //Cek session terlebih dahulu
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            var object;
+
+                            var form = new FormData();
+                            object = form.append('File', $("#File")[0].files[0]);
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: '../NoticeOfPayment/SubmitExcelCreate',
+                                type: 'POST',
+                                mimeType: "multipart/form-data",
+                                processData: false,
+                                contentType: false,
+                                data: form,
+                                success: function (d) {
+                                    //Tampilkan alert status
+                                    if (d == "") {
+                                        BackDraft();
+                                        NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                        Table.draw();
+                                    } else {
+                                        NotifikasiError("Error", d)
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#Back").click(function () {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+        });
+    }
+    function ValidationFormFileNop() {
+
+        $('#FormDataFile').validate({
+            rules: {
+                File: {
+                    required: true
+                }
+            },
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+
+        $.validator.messages.required = "Harap isi field ini terlebih dahulu!";
+
+        $('#SubmitFile').click(function () {
+            var url = '';
+            var $validFileNop = $("#FormDataFile").valid();
+            if (!$validFileNop) {
+                //alert("False");
+                $validator.focusInvalid();
+                return false;
+            } else {
+                //Cek session terlebih dahulu
+                $.ajax({
+                    type: 'GET',
+                    url: '../Login/CekSession',
+                    success: function (hasil) {
+                        if (hasil == true) {
+                            if (StateFileNop == "temp") {
+                                url = '../NoticeOfPayment/SubmitCreateFileNopTemp';
+                                uniq = RandomString;
+                            }
+                            else {
+                                url = '../NoticeOfPayment/SubmitCreateFileNop';
+                                uniq = $("#Id").val();
+                            }
+
+                            var form = new FormData();
+                            form.append('File', $("#File")[0].files[0]);
+                            form.append('uniq', uniq);
+                            //Cek session terlebih dahulu
+                            $.ajax({
+                                url: url,
+                                type: 'POST',
+                                mimeType: "multipart/form-data",
+                                processData: false,
+                                contentType: false,
+                                data: form,
+                                success: function (d) {
+                                    //Tampilkan alert status
+                                    if (d == "") {
+                                        $('#modal-lg').modal('hide');
+                                        NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                        if (StateFileNop == "temp") {
+                                            TableDataFileNopTemp.draw();
+                                        }
+                                        else {
+                                            TableFileNop.draw();
+                                        }
+                                    } else {
+                                        NotifikasiError("Error", d)
+                                    }
+                                }
+                            });
+                        }
+                        else {
+                            window.location.href = "../Login/Login?a=true";
+                        }
+                    }
+                });
+            }
+        });
+
+        $("#Back").click(function () {
+            $('#DivContentBody').show();
+            document.getElementById("DivFormBody").innerHTML = "";
+        });
+    }
+
+    function SendDataSingle(Id) {
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    //Cek session terlebih dahulu
+                    $.ajax({
+                        url: '../NoticeOfPayment/SendToDeva',
+                        type: 'POST',
+                        data: { "Ids": Id },
+                        success: function (d) {
+                            // if (d == "") {
+                            //     NotifikasiSukses("Sukses", "Data berhasil dikirim!");
+                            // } else {
+                            //     NotifikasiError("Error", "Data gagal dikirim!")
+                            // }
+                            NotifikasiInfo(d)
+                            Table.draw();
+                        }
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function SendData() {
+        var selectedIds = [];
+
+        $('tbody input[type="checkbox"]:checked').each(function () {
+            var rowData = Table.row($(this).closest('tr')).data();
+            selectedIds.push(rowData.id);
+        });
+
+        if (selectedIds.length != 0) {
+            $.ajax({
+                type: 'GET',
+                url: '../Login/CekSession',
+                success: function (hasil) {
+                    if (hasil == true) {
+                        //Cek session terlebih dahulu
+                        $.ajax({
+                            url: '../NoticeOfPayment/SendToDeva',
+                            type: 'POST',
+                            data: { "Ids": selectedIds.join() },
+                            success: function (d) {
+                                // if (d == "") {
+                                //     NotifikasiSukses("Sukses", "Data berhasil dikirim!");
+                                // } else {
+                                //     NotifikasiError("Error", "Data gagal dikirim!")
+                                // }
+                                NotifikasiInfo(d)
+                                Table.draw();
+                            }
+                        });
+                    }
+                    else {
+                        window.location.href = "../Login/Login?a=true";
+                    }
+                }
+            });
+        }
+        else {
+            NotifikasiGagal("Mohon pilih data yang akan di kirim")
+        }
+    }
+
+    function PrintExcelNoP() {
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    var TypeExcel = "xlsx"
+                    $.ajax({
+                        url: '../NoticeOfPayment/PrintExcelNoP',
+                        type: 'POST',
+                        data: {
+                            Tanggal: $("#txtDueDateSearchParam").val(),
+                            TypeExcel: TypeExcel
+                        },
+                        success: function (d) {
+                            NotifikasiInfo(d)
+                        }
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function PrintPdfNoP() {
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    $.ajax({
+                        url: '../NoticeOfPayment/PrintPDFNoP',
+                        type: 'POST',
+                        data: {
+                            Tanggal: $("#txtDueDateSearchParam").val(),
+                        },
+                        success: function (d) {
+                            NotifikasiInfo(d)
+                        }
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function DownloadFilePendukungTemp(id) {
+        var url = "";
+        url = '../NoticeOfPayment/DownloadFilePendukungTemp';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: { 'Tanggal': $("#txtDueDateSearchParam").val(), 'id': id },
+                        xhrFields: {
+                            responseType: 'blob' // Set the response type to blob
+                        },
+                        success: function (data, textStatus, request) {
+
+                            // Extract the filename from the Content-Disposition header
+                            var contentDisposition = request.getResponseHeader('Content-Disposition');
+                            var filename = contentDisposition.match(/filename="(.+?)"/)[1];
+
+                            // Create a temporary URL for the blob data
+                            var blobUrl = window.URL.createObjectURL(data);
+
+                            // Create an anchor element to trigger the download
+                            var a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = filename; // Set the download filename
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+
+                            // Clean up the temporary URL
+                            window.URL.revokeObjectURL(blobUrl);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Failed to download the file:', error);
+                        }
+                    });
+
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+    function DownloadFilePendukung(id) {
+        var url = "";
+        url = '../NoticeOfPayment/DownloadFilePendukung';
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: { 'id': id },
+                        xhrFields: {
+                            responseType: 'blob' // Set the response type to blob
+                        },
+                        success: function (data, textStatus, request) {
+
+                            // Extract the filename from the Content-Disposition header
+                            var contentDisposition = request.getResponseHeader('Content-Disposition');
+                            var filename = contentDisposition.match(/filename="(.+?)"/)[1];
+
+                            // Create a temporary URL for the blob data
+                            var blobUrl = window.URL.createObjectURL(data);
+
+                            // Create an anchor element to trigger the download
+                            var a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = filename; // Set the download filename
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+
+                            // Clean up the temporary URL
+                            window.URL.revokeObjectURL(blobUrl);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Failed to download the file:', error);
+                        }
+                    });
+
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+    }
+
+    function GetDetailCreditorRef() {
+        $.ajax({
+            url: '../Utility/GetDataDetailCreditorRef',
+            type: 'POST',
+            data: { "CreditorRef": $("#CreditorRef").val(), "DueDate": $("#DueDate").val() },
+            success: function (d) {
+                console.log(d)
+                $("#Outstanding").val(formatMoneyNoDecimal((Math.round(d.outstanding).toString().replace(",00", ""))));
+                $("#Principal").val(formatMoneyNoDecimal((Math.round(d.principal).toString().replace(",00", ""))));
+                $("#Interest").val(formatMoneyNoDecimal((Math.round(d.interest).toString().replace(",00", ""))));
+                $("#Fee").val(formatMoneyNoDecimal((Math.round(d.fee).toString().replace(",00", ""))));
+            }
+        });
+    }
+
+    function RandomStringView(length) {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < length) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            counter += 1;
+        }
+        return result;
+    }
+
+    function SetValueAcc() {
+        var acc = $("#RekId").find(":selected").text();
+        $("#RekNameAcc").val(acc);
+    }
+
+
+
+    //No Used
+    function LoadDataTabledetail(data) {
+        if (Table != undefined) {
+            Table.destroy();
+        }
+
+        Table = $('#NopDetailTable').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true,
+            serverSide: true,
+            orderMulti: false,
+            retrieve: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">',
+            ajax: {
+                "url": '../NoticeOfPayment/LoadData',
+                "type": "POST",
+                "datatype": "json",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    swal({
+                        title: "Timeout",
+                        text: "Request Timeout Mohon Reload Halaman Ini!",
+                        icon: "warning",
+                        buttons: true,
+                        dangerMode: true,
+                    }).then((willDelete) => {
+                        if (willDelete) {
+                            window.location.reload();
+                        }
+                    });
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: "Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data",
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: "Menampilkan 0 Sampai 0 Dari 0 Data",
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">'
+                            + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="Edit(' + full.id + ')" ><i class="fas fa-pencil-alt"></i> Edit</a>'
+                            + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="View(' + full.id + ')"><i class="fas fa-eye"></i> View</a>'
+                            + '<a class="btn btn-info btn-sm mr-2" href="javascript:void(0)" onclick="Delete(' + full.id + ')"><i class="fas fa-trash"></i> Delete</a>'
+                            + '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "nopId", title: "NopId" },
+                { responsivePriority: 4, "data": "creditorRef", title: "RekId" },
+                { responsivePriority: 5, "data": "outstanding", title: "DueDate" },
+                { responsivePriority: 5, "data": "principal", title: "InterestDays" },
+                { responsivePriority: 6, "data": "fee", title: "InterestRate" }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 4
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+
+        Table.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableDataDetailNopTemp(data) {
+        if (TableDataDetailNopTemp != undefined) {
+            TableDataDetailNopTemp.destroy();
+        }
+
+        TableDataDetailNopTemp = $('#TableDataDetailNopTemp').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfPayment/LoadDataDetailNopTemp',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "randomstring": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteDetailNopTemp(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                }, { responsivePriority: 3, "data": "creditorRef", title: "Creditor Ref" },
+                {
+                    responsivePriority: 4,
+                    data: "outstanding",
+                    title: "Outstanding",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 5,
+                    data: "principal",
+                    title: "Principal",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 6,
+                    data: "interest",
+                    title: "Interest",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 7,
+                    data: "fee",
+                    title: "Fee",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 6
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableDataDetailNopTemp.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableDetailNop(data) {
+        if (TableDetailNop != undefined) {
+            TableDetailNop.destroy();
+        }
+
+        TableDetailNop = $('#TableDetailNop').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfPayment/LoadDataDetailNop',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NopId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2,
+                    "data": "id", "name": "Id", title: "Action", "orderable": false, "visible": true, "render": function (data, type, full, meta) {
+
+                        return '<td class="project-actions text-right">' +
+                            '<div class="dropdown">' +
+                            '<button class="btn btn-info dropdown-toggle" type = "button" id = "actionDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style=" width:7rem;">' +
+                            'Action' +
+                            '</button>' +
+                            '<div class="dropdown-menu" aria-labelledby="actionDropdown">' +
+                            '<a class="dropdown-item" href = "javascript:void(0)" onclick = "DeleteDetailNop(' + full.id + ')" > <i class="fas fa-trash text-danger"> </i> Delete</a >' +
+                            '</div>' +
+                            '</div>' +
+                            '</td>'
+                    }
+                },
+                { responsivePriority: 3, "data": "creditorRef", title: "Creditor Ref" },
+                {
+                    responsivePriority: 4,
+                    data: "outstanding",
+                    title: "Outstanding",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 5,
+                    data: "principal",
+                    title: "Principal",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 6,
+                    data: "interest",
+                    title: "Interest",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 7,
+                    data: "fee",
+                    title: "Fee",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 6
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableDetailNop.columns.adjust().responsive.recalc();
+    }
+    function LoadDataTableDetailNopView(data) {
+        if (TableDetailNopView != undefined) {
+            TableDetailNopView.destroy();
+        }
+
+        TableDetailNopView = $('#TableDetailNopView').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../NoticeOfPayment/LoadDataDetailNop',
+                "type": "POST",
+                "datatype": "json",
+                "data": { "NopId": data },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    window.location.href = "../Error/HttpStatusErrorLayout?statusCode=500"
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: '<div class="row"><div class="col-6">Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data</div>',
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: '<div class="row"><div class="col-6">Menampilkan 0 Sampai 0 Dari 0 Data</div>',
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                { responsivePriority: 2, "data": "creditorRef", title: "Creditor Ref" },
+                {
+                    responsivePriority: 3,
+                    data: "outstanding",
+                    title: "Outstanding",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 4,
+                    data: "principal",
+                    title: "Principal",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 5,
+                    data: "interest",
+                    title: "Interest",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                },
+                {
+                    responsivePriority: 6,
+                    data: "fee",
+                    title: "Fee",
+                    className: "text-right",
+                    render: function (data, type, row) {
+                        if (type === 'display' || type === 'filter') {
+                            return currencyFormat(parseFloat(data));
+                        }
+                        return data;
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 5
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        TableDetailNopView.columns.adjust().responsive.recalc();
+    }
+
+    function submitNewDetail() {
+        var url = '';
+        var $valid = $("#FormNopDetail").valid();
+        if (!$valid) {
+            //alert("False");
+            $validator.focusInvalid();
+            return false;
+        } else {
+            url = '../NoticeOfPayment/SubmitCreateDetail';
+            //Cek session terlebih dahulu
+            $.ajax({
+                type: 'GET',
+                url: '../Login/CekSession',
+                success: function (hasil) {
+                    if (hasil == true) {
+                        //Cek session terlebih dahulu
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: $('#FormNopDetail').serialize(),
+                            success: function (d) {
+                                //Tampilkan alert status
+                                if (d == "") {
+                                    $('#NopDetailmodal').modal('hide');
+                                    NotifikasiSukses("Sukses", "Data berhasil disimpan!");
+                                    NopDetailTable.draw();
+                                } else {
+                                    NotifikasiError("Error", d)
+                                }
+                            }
+                        });
+                    }
+                    else {
+                        window.location.href = "../Login/Login?a=true";
+                    }
+                }
+            });
+        }
+    }
+    function updateDetail(id) {
+        State = "edit";
+        SearchData = { "id": id };
+        UrlPartialView = '../NoticeOfPayment/UpdateDetail/' + id;
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    // Isi input fields modal dengan data yang diperoleh
+                    $.ajax({
+                        type: "GET",
+                        url: UrlPartialView,
+                        success: function (detail) {
+                            console.log(detail);
+                            $('#IdUpdate').val(id);
+                            $('#CreditorRefUpdate').val(detail.creditorRef);
+                            $('#OutstandingUpdate').val(detail.outstanding);
+                            $('#PrincipalUpdate').val(detail.principal);
+                            $('#InterestUpdate').val(detail.interest);
+                            $('#FeeUpdate').val(detail.fee);
+                            $('#NopDetailEditModal').modal('show');
+                        }
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+                // Tampilkan modal
+            },
+            error: function (xhr, status, error) {
+                // Tambahkan logika untuk menangani kesalahan jika terjadi
+                console.error('Terjadi kesalahan:', error);
+                // Misalnya, menampilkan pesan kesalahan kepada pengguna
+                alert('Terjadi kesalahan. Silakan coba lagi.');
+            }
+        });
+    }
+    function simpanDetail() {
+        // Ambil nilai dari setiap input
+        var creditorRef = document.getElementById('CreditorRef').value;
+        var outstanding = document.getElementById('Outstanding').value;
+        var principal = document.getElementById('Principal').value;
+        var interest = document.getElementById('Interest').value;
+        var fee = document.getElementById('Fee').value;
+
+        // Buat objek untuk menyimpan data detail
+        var detail = {
+            CreditorRef: creditorRef,
+            Outstanding: outstanding,
+            Principal: principal,
+            Interest: interest,
+            Fee: fee
+        };
+
+        // Kirim objek detail ke server untuk disimpan
+        $.ajax({
+            type: 'POST',
+            url: '../NoticeOfPayment/Create', // Ganti "NamaController" dengan nama controller Anda
+            contentType: 'application/json',
+            data: JSON.stringify(detail),
+            success: function (response) {
+                if (response == '') {
+                    // Jika penyimpanan berhasil, tutup modal
+                    $('#NopDetailModal').modal('hide');
+                    // Lakukan tindakan tambahan seperti memuat ulang halaman atau menampilkan pesan sukses
+                } else {
+                    // Jika terjadi kesalahan, tampilkan pesan error
+                    alert(response);
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                // Jika terjadi kesalahan dalam koneksi atau permintaan, tampilkan pesan error
+                alert('Terjadi kesalahan: ' + errorThrown);
+            }
+        });
+    }
+    function saveCreateNopDetail() {
+        var _CreditorRef = $('#CreditorRef').val().trim();
+        var _Outstanding = $('#Outstanding').val().trim();
+        var _Principal = $('#Principal').val().trim();
+        var _Interest = $('#Interest').val().trim();
+        var _Fee = $('#Fee').val().trim();
+
+
+        if (_CreditorRef == "") {
+            $("#errCreditorRef").text("Harap isi field ini terlebih dahulu!");
+            return;
+        } else {
+            $("#errCreditorRef").text("");
+        }
+        if (_Outstanding == "") {
+            $("#errOutstanding").text("Harap isi field ini terlebih dahulu!");
+            return;
+        } else {
+            $("#errOutstanding").text("");
+        }
+        if (_Principal == "") {
+            $("#errPrincipal").text("Harap isi field ini terlebih dahulu!");
+            return;
+        } else {
+            $("#errPrincipal").text("");
+        }
+        if (_Fee == "") {
+            $("#errInterest").text("Harap isi field ini terlebih dahulu!");
+            return;
+        } else {
+            $("#errInterest").text("");
+        }
+
+        var data = {
+            CreditorRef: _CreditorRef,
+            Outstanding: _Outstanding,
+            Principal: _Principal,
+            Interest: _Interest,
+            Fee: _Fee,
+
+        };
+
+        if (indexToUpdate === null) {
+            NopDetailList.push(data);
+            indexToUpdate = null;
+            $('#NopDetailmodal').modal('hide');
+        }
+        else {
+            NopDetailList[indexToUpdate] = data;
+        }
+
+
+        GetAllNOPDetail();
+        indexToUpdate = null;
+
+        $('#NopDetailModal').modal('hide');
+
+        $('#CreditorRef').val('');
+        $('#Outstanding').val('');
+        $('#Principal').val('');
+        $('#Interest').val('');
+        $('#Fee').val('');
+
+        $('#NopDetailmodal').modal('hide');
+    }
+
+    function closeCreateDetailModal() {
+        indexToUpdate = null;
+        $('#CreditorRef').val('');
+        $('#Outstanding').val('');
+        $('#Principal').val('');
+        $('#Interest').val('');
+        $('#Fee').val('');
+        $('#NopDetailmodal').modal('hide');
+    }
+    function closeEditDetailModal() {
+        indexToUpdate = null;
+        $('#CreditorRef').val('');
+        $('#Outstanding').val('');
+        $('#Principal').val('');
+        $('#Interest').val('');
+        $('#Fee').val('');
+        $('#NopDetailEditModal').modal('hide');
+    }
+
+    function saveEditNopDetail() {
+        var formData = $('#FormNopDetailUpdate').serializeArray();
+        console.log("data form: ", formData);
+
+        // Inisialisasi objek kosong untuk menyimpan data
+        var formDataObject = {};
+
+        // Mengonversi array objek menjadi objek JavaScript biasa
+        formData.forEach(function (item) {
+            formDataObject[item.name] = item.value;
+        });
+        formDataObject.__RequestVerificationToken = $('input[name="__RequestVerificationToken"]').val();
+
+        var serializedData = $.param(formDataObject);
+
+        console.log("Data: ", serializedData);
+
+        $.ajax({
+            type: 'GET',
+            url: '../Login/CekSession',
+            success: function (hasil) {
+                if (hasil == true) {
+                    $.ajax({
+                        url: '../NoticeOfPayment/SubmitDetail',
+                        type: "POST",
+                        // contentType: "application/json",
+                        data: serializedData,
+                        success: function (result) {
+                            $(".modal").modal("hide");
+                            // Table.draw();
+                            // RefreshTable();
+                            window.location.reload();
+                        },
+                        error: function () {
+                            alert("Terjadi Kesalahan");
+                        }
+                    });
+                }
+                else {
+                    window.location.href = "../Login/Login?a=true";
+                }
+            }
+        });
+
+
+    }
+    function DeleteDetail(id) {
+        // debugger;
+        state = "deletedetail";
+        swal({
+            title: "konfirmasi",
+            text: "apakah anda yakin ingin menghapus data ini?",
+            icon: "warning",
+            buttons: true,
+            dangermode: true,
+        })
+            .then((willdelete) => {
+                if (willdelete) {
+                    $.ajax({
+                        type: 'GET',
+                        url: '../Login/CekSession',
+                        success: function (hasil) {
+                            if (hasil == true) {
+                                $.ajax({
+                                    url: '../NoticeOfPayment/DeleteDetail',
+                                    type: 'POST',
+                                    data: { "Ids": id },
+                                    success: function (d) {
+                                        if (d == "") {
+                                            NotifikasiSukses("Sukses", "Data berhasil dihapus!");
+                                        } else {
+                                            NotifikasiError("Error", "Data gagal dihapus!")
+                                        }
+                                        Table.draw();
+                                        location.reload();
+                                    }
+                                });
+                            }
+                            else {
+                                window.location.href = "../Login/Login?a=true";
+                            }
+                        }
+                    });
+                }
+            });
+        return false;
+    }
+</script>

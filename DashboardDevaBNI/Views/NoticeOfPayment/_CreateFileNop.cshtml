@@ -1,0 +1,35 @@
+﻿@model DashboardDevaBNI.ViewModels.NoticeOfPaymentFileUpload_ViewModel
+
+
+
+<div class="modal-header">
+    <h5 class="modal-title" id="exampleModalLabel">Create File NOP</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<form id="FormDataFile">
+    <div class="card-body">
+        @Html.AntiForgeryToken()
+        <div class="form-group">
+            <label class="col-form-label">File Pendukung NOP<span class="labelMandatory">*</span></label>
+            <div class="row">
+                <div class="col-12">
+                    <input type="file" class="form-control dropify" id="File" data-allowed-file-extensions='["xlsx", "xls", "doc", "docx", "pdf"]'>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button class="btn btn-info" type="button" id="SubmitFile">
+            Submit
+        </button>
+
+        <button class="btn btn-danger" type="button" id="CloseFileNop" data-dismiss="modal" aria-hidden="true">
+            Batal
+        </button>
+    </div>
+</form>
+

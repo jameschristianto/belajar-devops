@@ -1,0 +1,187 @@
+﻿<script>
+
+    var Table;
+    var State;
+    var idleTimer;
+    $(document).ready(function () {
+        LoadDataTable();
+        resetIdleTimer();
+    });
+
+    function resetIdleTimer() {
+        clearInterval(idleTimer);
+        idleTimer = setInterval(function () {
+            Table.ajax.reload();
+        }, 10000);
+    }
+
+    document.addEventListener("mousemove", resetIdleTimer);
+    document.addEventListener("keydown", resetIdleTimer);
+
+    function LoadDataTable(data) {
+        if (Table != undefined) {
+            Table.destroy();
+        }
+
+        Table = $('#Table').DataTable({
+            fixedHeader: {
+                header: true
+            },
+            pageLength: 10,
+            destroy: true,
+            orderCellsTop: true,
+            responsive: true,
+            processing: true, // untuk menampilkan bar prosessing
+            serverSide: true, // untuk proses server side datatable harus diset true
+            orderMulti: false, // untuk disable multi order column
+            retrieve: true,
+            //autoWidth: true,
+            dom: '<"top"i>rt<"bottom"lp><"clear">', // untuk menghilangkan search global
+            //data: data,
+            ajax: {
+                "url": '../DownloadList/LoadData',
+                "type": "POST",
+                "datatype": "json",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    swal({
+                        title: "Timeout",
+                        text: "Request Timeout Mohon Reload Halaman Ini!",
+                        icon: "warning",
+                        buttons: true,
+                        dangerMode: true,
+                    })
+                        .then((willDelete) => {
+                            if (willDelete) {
+                                window.location.reload();
+                            }
+                        });
+                }
+            },
+            language: {
+                processing: '<i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span> ',
+                info: "Menampilkan _START_ Sampai _END_ Dari _TOTAL_ Data",
+                paginate: {
+                    first: "Halaman Awal",
+                    last: "Halaman Akhir",
+                    previous: "Halaman Sebelumnya",
+                    next: "Halaman Selanjutnya",
+                },
+                lengthMenu: "Menampilkan _MENU_ Data",
+                emptyTable: "Data tidak ditemukan",
+                infoEmpty: "Menampilkan 0 Sampai 0 Dari 0 Data",
+                zeroRecords: "Data tidak ditemukan"
+            },
+            columns: [
+                { responsivePriority: 1, "data": "number", title: "No" },
+                {
+                    responsivePriority: 2, "data": "generatedDate", title: "Generated Date", "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = moment(data).locale('id').format('DD MMM yyyy HH:mm:ss')
+                        }
+                        return format
+                    }
+                },
+                {
+                    responsivePriority: 3, "data": "expiredDate", title: "Expired Date", "render": function (data, type, full, meta) {
+                        var format = '';
+                        if (data != null) {
+                            format = moment(data).locale('id').format('DD MMM yyyy HH:mm:ss')
+                        }
+                        return format
+                        //return data.toString().replace("T", " ");
+                    }
+                },
+                { responsivePriority: 4, "data": "fileName", title: "File Name" },
+                { responsivePriority: 5, "data": "extension", title: "Extension" },
+                {
+                    responsivePriority: 6, "data": "status", title: "Status", "render": function (data, type, full, meta) {
+                        if (full.status == 1) {
+                            return '<button class="btn btn-success" style="width: 100%" onclick = "DownloadFile(' + full.id + ')">Download File</button>'
+                        }
+                        else if (full.status == 0) {
+                            return '<button class="btn btn-info" style="width: 100%;pointer-events:none">On Progress</button>'
+                        }
+                        else if (full.status == 2) {
+                            return '<button class="btn btn-info" style="width: 100%;pointer-events:none">Data Kosong</button>'
+                        }
+                        else {
+                            return '<button class="btn btn-danger" style="width: 100%;pointer-events:none">Error</button>'
+                        }
+                    }
+                }
+            ],
+            columnDefs: [
+                {
+                    render: function (data, type, full, meta) {
+                        return "<div class='text-wrap width-comment'>" + data + "</div>";
+                    },
+                    targets: 5
+                }
+            ],
+            "order": [[1, "desc"]]
+        });
+
+        //$.fn.dataTable.ext.errMode = 'throw';
+
+        //--------------------------Function untuk melempar parameter search ---------------------//
+        //Untuk melempar parameter search
+        //oTable = $('#Table').DataTable();
+        $('#BtnSearch').click(function () {
+            Table.columns(2).search($('#txtKeySearchParam').val());
+
+
+            //hit search ke server
+            Table.draw();
+        });
+
+
+        //---------------------Function untuk reset data pencarian----------------//
+        $('#BtnClearSearch').click(function () {
+            $('#txtKeySearchParam').val("");
+
+            Table.columns(2).search($('#txtKeySearchParam').val().trim());
+            //hit search ke server
+            Table.draw();
+        });
+
+        Table.columns.adjust().responsive.recalc();
+    }
+
+    function DownloadFile(id) {
+        var url = "";
+        url = '../DownloadList/DownloadFile';
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: { 'id': id },
+            xhrFields: {
+                responseType: 'blob' // Set the response type to blob
+            },
+            success: function (data, textStatus, request) {
+
+                // Extract the filename from the Content-Disposition header
+                var contentDisposition = request.getResponseHeader('Content-Disposition');
+                var filename = contentDisposition.match(/filename="(.+?)"/)[1];
+
+                // Create a temporary URL for the blob data
+                var blobUrl = window.URL.createObjectURL(data);
+
+                // Create an anchor element to trigger the download
+                var a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename; // Set the download filename
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+
+                // Clean up the temporary URL
+                window.URL.revokeObjectURL(blobUrl);
+            },
+            error: function (xhr, status, error) {
+                console.error('Failed to download the file:', error);
+            }
+        });
+    }
+
+</script>
