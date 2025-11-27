@@ -1,24 +1,12 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
-FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
-WORKDIR /app
-EXPOSE 80
-EXPOSE 443
-
 FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["DashboardDevaBNI/DashboardDevaBNI.csproj", "DashboardDevaBNI/"]
-RUN dotnet restore "./DashboardDevaBNI/DashboardDevaBNI.csproj"
+COPY "DashboardDevaBNI.csproj" .
+RUN dotnet restore "DashboardDevaBNI.csproj"
 COPY . .
-WORKDIR "/src/DashboardDevaBNI"
-RUN dotnet build "./DashboardDevaBNI.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet publish "DashboardDevaBNI.csproj" -c Release -o /app/publish --no-restore
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./DashboardDevaBNI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 as final
+EXPOSE 8080
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish/ ./
 ENTRYPOINT ["dotnet", "DashboardDevaBNI.dll"]
